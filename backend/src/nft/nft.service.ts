@@ -1,29 +1,37 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { firstValueFrom } from 'rxjs';
+import {
+  GraphTokenApiProvider,
+  NetworkId,
+} from './providers/graph-tokenapi.provider';
 
 @Injectable()
 export class NftService {
-  constructor(private readonly http: HttpService) {}
+  constructor(private readonly graph: GraphTokenApiProvider) {}
 
-  private headers() {
-    const key = process.env.OPENSEA_API_KEY || '';
-    return key ? { 'x-api-key': key } : {};
+  // Ownerships
+  ownerships(
+    address: string,
+    network_id: NetworkId,
+    opts?: {
+      token_standard?: 'ERC721' | 'ERC1155';
+      contract?: string;
+      page?: number;
+      limit?: number;
+    },
+  ) {
+    return this.graph.ownerships({ address, network_id, ...opts });
   }
 
-  async getNftsByAddress(address: string, chain: string) {
-    const url = `https://api.opensea.io/api/v2/chain/${chain}/account/${address}/nfts?limit=100`;
-    const { data } = await firstValueFrom(
-      this.http.get(url, { headers: this.headers() }),
-    );
-    return data;
+  // Single item metadata
+  item(contract: string, tokenId: string, network_id: NetworkId) {
+    return this.graph.item({ contract, token_id: tokenId, network_id });
   }
 
-  async getNftMetadata(chain: string, contract: string, tokenId: string) {
-    const url = `https://api.opensea.io/api/v2/chain/${chain}/contract/${contract}/nfts/${tokenId}`;
-    const { data } = await firstValueFrom(
-      this.http.get(url, { headers: this.headers() }),
-    );
-    return data;
+  // Sales
+  sales(
+    network_id: NetworkId,
+    opts: Parameters<GraphTokenApiProvider['sales']>[0],
+  ) {
+    return this.graph.sales({ ...opts, network_id });
   }
 }

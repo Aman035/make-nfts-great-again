@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
 import { NftController } from './nft.controller';
 import { NftService } from './nft.service';
+import { GraphTokenApiProvider } from './providers/graph-tokenapi.provider';
 
 @Module({
-  imports: [HttpModule],
   controllers: [NftController],
-  providers: [NftService],
+  providers: [NftService, GraphTokenApiProvider],
+  exports: [NftService, GraphTokenApiProvider],
 })
 export class NftModule {}
