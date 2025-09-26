@@ -210,7 +210,12 @@ User Context:
 - Last Active: ${userMemory.stats.lastActive}
 
 Available Tools:
-- Graph MCP: Query blockchain data, NFT metadata, transfer history, holder information
+- getNFTDetails: Get comprehensive NFT information including metadata, owner, and recent transfers
+- getNFTTransferHistory: Get the complete transfer history for any NFT
+- getUserSummary: Get user's ETH balance, ERC20 tokens, and NFT holdings
+- getUserNFTs: Get all NFTs owned by a user
+- getUserETHBalance: Get user's ETH balance
+- getUserERC20Balances: Get user's ERC20 token balances
 - User Memory: Access previous conversations and preferences
 
 Instructions:
@@ -237,74 +242,133 @@ Recent User Interactions:`;
   }
 
   /**
-   * Create Graph MCP tools for the agent
+   * Create high-level NFT and user tools for the agent
    */
   private createGraphMCPTools() {
     return [
       {
         type: 'function' as const,
         function: {
-          name: 'list_databases',
-          description: 'List available databases from The Graph Token API',
+          name: 'getNFTDetails',
+          description:
+            'Get comprehensive details about a specific NFT including metadata, owner, and recent transfers',
           parameters: {
             type: 'object',
-            properties: {},
+            properties: {
+              contract: {
+                type: 'string',
+                description: 'NFT contract address',
+              },
+              tokenId: {
+                type: 'string',
+                description: 'NFT token ID',
+              },
+            },
+            required: ['contract', 'tokenId'],
           },
         },
       },
       {
         type: 'function' as const,
         function: {
-          name: 'list_tables',
-          description: 'List tables for a specific database',
+          name: 'getNFTTransferHistory',
+          description: 'Get the transfer history for a specific NFT',
           parameters: {
             type: 'object',
             properties: {
-              database: {
+              contract: {
                 type: 'string',
+                description: 'NFT contract address',
+              },
+              tokenId: {
+                type: 'string',
+                description: 'NFT token ID',
+              },
+              limit: {
+                type: 'number',
                 description:
-                  'Database name (e.g., mainnet:evm-nft-tokens@v0.6.2)',
+                  'Maximum number of transfers to return (default: 10)',
               },
             },
-            required: ['database'],
+            required: ['contract', 'tokenId'],
           },
         },
       },
       {
         type: 'function' as const,
         function: {
-          name: 'describe_table',
-          description: 'Get table schema and column information',
+          name: 'getUserSummary',
+          description:
+            'Get comprehensive summary of a user including ETH balance, ERC20 tokens, and NFT holdings',
           parameters: {
             type: 'object',
             properties: {
-              database: {
+              address: {
                 type: 'string',
-                description: 'Database name',
-              },
-              table: {
-                type: 'string',
-                description: 'Table name',
+                description: 'User wallet address',
               },
             },
-            required: ['database', 'table'],
+            required: ['address'],
           },
         },
       },
       {
         type: 'function' as const,
         function: {
-          name: 'run_query',
-          description: 'Execute SQL query on blockchain data',
+          name: 'getUserNFTs',
+          description: 'Get all NFTs owned by a user',
           parameters: {
             type: 'object',
             properties: {
-              query: {
+              address: {
                 type: 'string',
-                description: 'SQL query using ClickHouse syntax',
+                description: 'User wallet address',
+              },
+              limit: {
+                type: 'number',
+                description: 'Maximum number of NFTs to return (default: 100)',
               },
             },
-            required: ['query'],
+            required: ['address'],
+          },
+        },
+      },
+      {
+        type: 'function' as const,
+        function: {
+          name: 'getUserETHBalance',
+          description: 'Get the ETH balance of a user',
+          parameters: {
+            type: 'object',
+            properties: {
+              address: {
+                type: 'string',
+                description: 'User wallet address',
+              },
+            },
+            required: ['address'],
+          },
+        },
+      },
+      {
+        type: 'function' as const,
+        function: {
+          name: 'getUserERC20Balances',
+          description: 'Get all ERC20 token balances for a user',
+          parameters: {
+            type: 'object',
+            properties: {
+              address: {
+                type: 'string',
+                description: 'User wallet address',
+              },
+              limit: {
+                type: 'number',
+                description:
+                  'Maximum number of tokens to return (default: 100)',
+              },
+            },
+            required: ['address'],
           },
         },
       },
@@ -323,20 +387,35 @@ Recent User Interactions:`;
 
     try {
       switch (name) {
-        case 'list_databases':
-          return await this.graphMCPService.listDatabases();
-
-        case 'list_tables':
-          return await this.graphMCPService.listTables(args.database);
-
-        case 'describe_table':
-          return await this.graphMCPService.describeTable(
-            args.database,
-            args.table,
+        case 'getNFTDetails':
+          return await this.graphMCPService.getNFTDetails(
+            args.contract,
+            args.tokenId,
           );
 
-        case 'run_query':
-          return await this.graphMCPService.runQuery(args.query);
+        case 'getNFTTransferHistory':
+          const limit = args.limit || 10;
+          const transferHistory = await this.graphMCPService.runQuery(
+            `SELECT \`from\` AS from_address, \`to\` AS to_address, tx_hash, block_num, timestamp
+             FROM \`mainnet:evm-nft-tokens@v0.6.2\`.erc721_transfers
+             WHERE contract = '${args.contract.toLowerCase()}' AND token_id = ${args.tokenId}
+             ORDER BY timestamp DESC
+             LIMIT ${limit}`,
+          );
+          return transferHistory;
+
+        case 'getUserSummary':
+          return await this.graphMCPService.getUserSummary(args.address);
+
+        case 'getUserNFTs':
+          const nftLimit = args.limit || 100;
+          return await this.graphMCPService.getNFTsOwned(args.address);
+
+        case 'getUserETHBalance':
+          return await this.graphMCPService.getEthBalance(args.address);
+
+        case 'getUserERC20Balances':
+          return await this.graphMCPService.getERC20Balances(args.address);
 
         default:
           return { error: `Unknown tool: ${name}` };
@@ -390,13 +469,34 @@ Recent User Interactions:`;
       const tools = this.createGraphMCPTools();
 
       // Get LLM response with tools
-      const llmResponse = await this.llmService.respondWithTools({
-        system: systemPrompt,
-        user: talkRequest.message,
-        tools,
-        toolHandler: (toolCall) => this.handleToolCall(toolCall),
-        temperature: 0.7,
-      });
+      let llmResponse;
+      try {
+        llmResponse = await this.llmService.respondWithTools({
+          system: systemPrompt,
+          user: talkRequest.message,
+          tools,
+          toolHandler: (toolCall) => this.handleToolCall(toolCall),
+          temperature: 0.7,
+        });
+      } catch (error) {
+        this.logger.error('LLM service failed, attempting fallback:', error);
+        // Fallback to simple text response without tools
+        try {
+          llmResponse = await this.llmService.respondText({
+            system: systemPrompt,
+            user: talkRequest.message,
+            temperature: 0.7,
+          });
+        } catch (fallbackError) {
+          this.logger.error(
+            'Fallback LLM response also failed:',
+            fallbackError,
+          );
+          throw new Error(
+            'LLM service is currently unavailable. Please try again later.',
+          );
+        }
+      }
 
       // Update user memory
       this.updateUserMemory(
