@@ -7,11 +7,11 @@ export class AgentController {
   constructor(private readonly agent: AgentService) {}
 
   /**
-   * Public, stateless chat with an NFT.
-   * Tools (Token API) are enabled by default; can be disabled per request with allowTools=false.
+   * Public, stateless chat with blockchain data analysis capabilities.
+   * MCP database tools are always enabled for comprehensive blockchain data querying.
    *
    * POST /agent/:chain/:contract/:tokenId/talk
-   * Body: { message, allowTools?, userAddress?, defaultNetwork? }
+   * Body: { message, userAddress?, defaultNetwork? }
    */
   @Post(':chain/:contract/:tokenId/talk')
   async talk(
@@ -20,9 +20,8 @@ export class AgentController {
     @Param('tokenId') tokenId: string,
     @Body() body: TalkDto,
   ) {
-    const { message, allowTools, userAddress, defaultNetwork } = body;
+    const { message, userAddress, defaultNetwork } = body;
     return this.agent.talk(chain, contract, tokenId, message, {
-      allowTools,
       userAddress,
       defaultNetwork,
     });

@@ -1,12 +1,11 @@
 // src/agent/persona.service.ts
 import { Injectable } from '@nestjs/common';
-import { NftService } from '../nft/nft.service';
 
 type PersonaOut = { system: string; temperature: number };
 
 @Injectable()
 export class PersonaService {
-  constructor(private readonly nft: NftService) {}
+  constructor() {}
 
   async buildSystemPrompt(
     chain: string,
@@ -14,53 +13,33 @@ export class PersonaService {
     tokenId: string,
     opts?: { toolsEnabled?: boolean },
   ): Promise<PersonaOut> {
-    const meta = (
-      await this.nft.item(
-        contract,
-        tokenId,
-        ((chain.includes(':') ? chain.split(':').pop() : chain) as any) ||
-          'mainnet',
-      )
-    ).data[0];
-
-    const name = meta.name;
-    const desc = meta.description;
-    const traits = (meta.attributes ?? [])
-      .map((t) => `${t.trait_type ?? ''}:${t.value ?? ''}`)
-      .filter(Boolean)
-      .join(', ');
-
-    // Tiny heuristic for temperature from traits
-    let temperature = 0.7;
-    const traitMap = new Map(
-      (meta.attributes ?? []).map((t) => [
-        String(t.trait_type ?? '').toLowerCase(),
-        String(t.value ?? '').toLowerCase(),
-      ]),
-    );
-    const mood = traitMap.get('mood');
-    if (mood === 'zen') temperature = 0.4;
-    if (mood === 'chaotic') temperature = 0.9;
-
+    // Generic blockchain data analysis persona
     const lines: string[] = [
-      `You are the AI persona of NFT "${name}" (token ${tokenId}) at ${contract} on ${chain}.`,
-      desc ? `Lore: ${desc}` : '',
-      traits ? `Traits: ${traits}` : 'Traits: (none provided)',
+      `You are an AI assistant specialized in blockchain data analysis.`,
+      `You can analyze token transfers, balances, and activity across multiple networks.`,
+      `Current context: Analyzing contract ${contract} on ${chain} network.`,
       `Safety: Never request or reveal private keys or secrets. If unsure, ask for clarification.`,
-      `Style: Be concise, clear, and helpful.`,
+      `Style: Be concise, clear, and helpful. Provide data-driven insights.`,
     ];
 
     if (opts?.toolsEnabled !== false) {
       lines.push(
-        `Tools available:`,
-        `- ownerships(address, network_id[, token_standard, contract, page, limit])`,
-        `- nftItem(contract, token_id, network_id)`,
-        `- sales(network_id[, contract, token_id, anyAddress, offererAddress, recipientAddress, startTime, endTime, orderBy, orderDirection, page, limit])`,
-        `Tool policy: Call tools only when needed; prefer network_id=mainnet if user didn't specify;`,
-        `use pagination (page/limit) and summarize results; do not dump raw JSON unless asked.`,
+        `MCP Tools available:`,
+        `- list_databases() - Explore available blockchain databases`,
+        `- list_tables(database) - List tables in a database`,
+        `- describe_table(database, table) - Get table schema`,
+        `- query_blockchain_data(query, database, limit?) - Execute custom SQL queries`,
+        `- get_token_transfers(database, token_address?, address?, limit?, order_by?, order_direction?) - Get recent transfers`,
+        `- get_token_balances(database, address?, token_address?, min_balance?) - Get current balances`,
+        `- analyze_token_activity(database, token_address, time_period?, metric?) - Analyze activity patterns`,
+        `Tool policy: Use tools to provide accurate blockchain data; prefer mainnet databases if user didn't specify;`,
+        `summarize results clearly; explain what the data means.`,
       );
     }
 
-    return { system: lines.filter(Boolean).join('\n'), temperature };
+    return {
+      system: lines.filter(Boolean).join('\n'),
+      temperature: 0.7,
+    };
   }
 }

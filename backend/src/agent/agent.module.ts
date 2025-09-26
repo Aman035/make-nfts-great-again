@@ -3,12 +3,18 @@ import { AgentController } from './agent.controller';
 import { AgentService } from './agent.service';
 import { PersonaService } from './persona.service';
 import { LLMService } from './llm.service';
-import { TokenApiToolsService } from './tokenapi-tools.service';
-import { NftModule } from '../nft/nft.module';
+import { MCPService } from './mcp.service';
+import { MCPToolsService } from './mcp-tools.service';
 
 @Module({
-  imports: [NftModule],
+  imports: [],
   controllers: [AgentController],
-  providers: [AgentService, PersonaService, LLMService, TokenApiToolsService],
+  providers: [
+    AgentService,
+    PersonaService,
+    LLMService,
+    MCPService,
+    MCPToolsService,
+  ],
 })
 export class AgentModule {}
