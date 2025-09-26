@@ -5,42 +5,24 @@ import {
   createZGComputeNetworkBroker,
   type ZGComputeNetworkBroker,
 } from '@0glabs/0g-serving-broker';
-
-type ToolDef = OpenAI.Chat.Completions.ChatCompletionTool;
-type ToolCall = {
-  id: string;
-  type: 'function';
-  function: { name: string; arguments: string };
-};
-
-export enum LLMProvider {
-  GROQ = 'groq',
-  ZERO_G = 'zero_g',
-  OPENAI = 'openai',
-}
+import {
+  LLMProviderInterface,
+  LLMProvider,
+  LLMResponse,
+  ToolDef,
+  ToolCall,
+} from '../interfaces/llm-provider.interface';
 
 @Injectable()
-export class LLMService {
-  private readonly logger = new Logger(LLMService.name);
+export class ZeroGProvider implements LLMProviderInterface {
+  private readonly logger = new Logger(ZeroGProvider.name);
+  readonly provider = LLMProvider.ZERO_G;
+
   private broker?: ZGComputeNetworkBroker;
   private pickedProvider?: string;
   private pickedEndpoint?: string;
   private pickedModel?: string;
-  private currentProvider: LLMProvider = LLMProvider.GROQ; // Default to Groq
 
-  constructor() {
-    // Set provider from environment variable
-    const providerEnv = process.env.LLM_PROVIDER?.toLowerCase();
-    if (
-      providerEnv &&
-      Object.values(LLMProvider).includes(providerEnv as LLMProvider)
-    ) {
-      this.currentProvider = providerEnv as LLMProvider;
-    }
-    this.logger.log(`Using LLM provider: ${this.currentProvider}`);
-  }
-
-  // 0G Network implementation (kept for future use)
   private async ensureZeroGReady() {
     if (this.broker) return;
 
@@ -97,89 +79,17 @@ export class LLMService {
     return { client, headers, model: this.pickedModel! };
   }
 
-  // Groq implementation (free alternative)
-  private buildGroqClient() {
-    const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) {
-      throw new Error('GROQ_API_KEY is required for Groq provider');
-    }
-
-    return new OpenAI({
-      apiKey,
-      baseURL: 'https://api.groq.com/openai/v1',
-      defaultHeaders: {
-        'User-Agent': 'MCP-Agent/1.0',
-      },
-    });
-  }
-
-  // Get available Groq models
-  private async getAvailableGroqModels(): Promise<string[]> {
-    try {
-      const client = this.buildGroqClient();
-      const response = await client.models.list();
-      return response.data
-        .map((model) => model.id)
-        .filter(
-          (id) =>
-            id.includes('llama') ||
-            id.includes('mixtral') ||
-            id.includes('gemma'),
-        );
-    } catch (error) {
-      this.logger.warn('Could not fetch Groq models, using fallback');
-      return [
-        'llama-3.1-8b-instant',
-        'llama-3.1-70b-versatile',
-        'mixtral-8x7b-32768',
-      ];
-    }
-  }
-
-  // OpenAI implementation
-  private buildOpenAIClient() {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is required for OpenAI provider');
-    }
-
-    return new OpenAI({
-      apiKey,
-    });
-  }
-
-  private async buildClientAndHeaders(promptForAuth: string) {
-    switch (this.currentProvider) {
-      case LLMProvider.ZERO_G:
-        return this.buildZeroGClientAndHeaders(promptForAuth);
-      case LLMProvider.GROQ:
-        return {
-          client: this.buildGroqClient(),
-          headers: {},
-          model: 'llama-3.1-8b-instant', // Current supported Groq model
-        };
-      case LLMProvider.OPENAI:
-        return {
-          client: this.buildOpenAIClient(),
-          headers: {},
-          model: 'gpt-4o-mini', // Cost-effective OpenAI model
-        };
-      default:
-        throw new Error(`Unsupported LLM provider: ${this.currentProvider}`);
-    }
-  }
-
   async respondText(args: {
     system: string;
     user: string;
     temperature?: number;
-  }): Promise<string> {
+  }): Promise<LLMResponse> {
     const { system, user, temperature = 0.7 } = args;
 
     try {
       const authMsg = `${system}\n\nUSER: ${user}`.slice(0, 2000);
       const { client, headers, model } =
-        await this.buildClientAndHeaders(authMsg);
+        await this.buildZeroGClientAndHeaders(authMsg);
 
       const res = await client.chat.completions.create(
         {
@@ -193,17 +103,18 @@ export class LLMService {
         { headers },
       );
 
-      return res.choices?.[0]?.message?.content ?? '';
+      return {
+        content: res.choices?.[0]?.message?.content ?? '',
+        provider: this.provider,
+        model,
+        usage: res.usage,
+      };
     } catch (error) {
-      this.logger.error(
-        `Error in respondText with ${this.currentProvider}:`,
-        error,
-      );
+      this.logger.error(`Error in 0G respondText:`, error);
       throw error;
     }
   }
 
-  /** Function-calling loop (Chat Completions). */
   async respondWithTools(args: {
     system: string;
     user: string;
@@ -214,13 +125,13 @@ export class LLMService {
       arguments: any;
     }) => Promise<any>;
     temperature?: number;
-  }): Promise<string> {
+  }): Promise<LLMResponse> {
     const { system, user, tools, toolHandler, temperature = 0.7 } = args;
 
     try {
       const authMsg = `${system}\n\nUSER: ${user}`.slice(0, 2000);
       const { client, headers, model } =
-        await this.buildClientAndHeaders(authMsg);
+        await this.buildZeroGClientAndHeaders(authMsg);
 
       const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
         { role: 'system', content: system },
@@ -234,18 +145,9 @@ export class LLMService {
           temperature,
         };
 
-        // Groq-specific configuration
-        if (this.currentProvider === LLMProvider.GROQ) {
-          if (tools && tools.length > 0) {
-            requestConfig.tools = tools;
-            requestConfig.tool_choice = 'auto';
-          }
-        } else {
-          // Other providers
-          if (tools) {
-            requestConfig.tools = tools;
-            requestConfig.tool_choice = 'auto';
-          }
+        if (tools) {
+          requestConfig.tools = tools;
+          requestConfig.tool_choice = 'auto';
         }
 
         return client.chat.completions.create(requestConfig, { headers });
@@ -257,7 +159,14 @@ export class LLMService {
         const msg = resp.choices?.[0]?.message;
         const toolCalls = (msg?.tool_calls ?? []) as ToolCall[];
 
-        if (!toolCalls.length) return msg?.content ?? '';
+        if (!toolCalls.length) {
+          return {
+            content: msg?.content ?? '',
+            provider: this.provider,
+            model,
+            usage: resp.usage,
+          };
+        }
 
         for (const call of toolCalls) {
           const fn = call.function.name;
@@ -303,36 +212,12 @@ export class LLMService {
         resp = await runTurn();
       }
     } catch (error) {
-      this.logger.error(
-        `Error in respondWithTools with ${this.currentProvider}:`,
-        error,
-      );
+      this.logger.error(`Error in 0G respondWithTools:`, error);
       throw error;
     }
   }
 
-  // Method to switch providers at runtime
-  switchProvider(provider: LLMProvider) {
-    this.currentProvider = provider;
-    this.logger.log(`Switched to LLM provider: ${provider}`);
-  }
-
-  // Get current provider
-  getCurrentProvider(): LLMProvider {
-    return this.currentProvider;
-  }
-
-  // Get available models for current provider
-  async getAvailableModels(): Promise<string[]> {
-    switch (this.currentProvider) {
-      case LLMProvider.GROQ:
-        return this.getAvailableGroqModels();
-      case LLMProvider.OPENAI:
-        return ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'];
-      case LLMProvider.ZERO_G:
-        return ['phala/gpt-oss-120b', 'phala/deepseek-chat-v3-0324'];
-      default:
-        return [];
-    }
+  isConfigured(): boolean {
+    return !!(process.env.OG_PRIVATE_KEY && process.env.OG_EVM_RPC);
   }
 }
