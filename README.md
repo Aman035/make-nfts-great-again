@@ -42,8 +42,7 @@ The AI uses The Graph's Token API to fetch real-time blockchain data, including 
 
 - **NestJS**: TypeScript framework for scalable server-side applications
 - **The Graph MCP**: Model Context Protocol integration for blockchain data
-- **LLM Providers**: Groq and ZeroG for AI inference
-- **IPFS Resolver**: Multiple gateway support for NFT metadata
+- **LLM Providers**: ZeroG for AI inference
 
 ### Frontend
 
@@ -54,11 +53,58 @@ The AI uses The Graph's Token API to fetch real-time blockchain data, including 
 - **RainbowKit**: Web3 wallet connection
 - **Wagmi**: React hooks for Ethereum
 
-### Blockchain
+## Tech Integrations
 
-- **Multi-chain Support**: Ethereum, Polygon, Arbitrum, Optimism, Base, BSC, Avalanche
-- **The Graph Token API**: Real-time blockchain data queries
-- **IPFS**: Decentralized storage for NFT metadata
+### 1. The Graph Token API MCP Server
+
+We use The Graph's Model Context Protocol (MCP) server to access real-time blockchain data through SQL queries. This integration allows our AI companions to:
+
+- **Query NFT Metadata**: Fetch detailed information about any NFT including traits, descriptions, and ownership history
+- **Access User Data**: Get ETH balances, ERC20 token holdings, and NFT collections for any wallet address
+- **Multi-chain Support**: Query data across Ethereum, Polygon, Arbitrum, Optimism, Base, BSC, Avalanche, and Unichain
+- **Real-time Updates**: Access the most current blockchain state through The Graph's indexing infrastructure
+
+The MCP server provides a standardized interface for blockchain data access, enabling our AI to make informed responses based on actual on-chain activity.
+
+### 2. 0G Labs AI Inference
+
+Our AI companions are powered by 0G Labs' high-performance inference infrastructure, which provides:
+
+- **Fast Response Times**: Optimized for real-time conversational AI
+- **Cost-effective Inference**: Efficient resource utilization for sustainable AI interactions
+- **Reliable Uptime**: Enterprise-grade infrastructure for consistent user experience
+- **Function Calling Support**: Enables AI to execute blockchain queries and tool calls seamlessly
+
+The 0G Labs integration allows our NFT companions to maintain context, remember conversations, and provide intelligent responses about blockchain data.
+
+### 3. Fluence Backend Deployment
+
+Our backend is deployed on Fluence's decentralized compute network, providing:
+
+- **Decentralized Infrastructure**: No single point of failure for our AI companion service
+- **Global Distribution**: Low-latency access from anywhere in the world
+- **Cost Efficiency**: Pay-per-use compute model for optimal resource allocation
+- **Nginx Proxy Setup**: Custom domain routing with SSL termination
+
+**Deployment Configuration:**
+
+```bash
+Server IP: 81.15.150.185
+Domain ( Nginx Reverse Proxy): backend.make-nfts-great-again.xyz
+```
+
+```
+❯ nslookup backend.make-nfts-great-again.xyz
+
+Server:		2409:40d0:bf:188d::d9
+Address:	2409:40d0:bf:188d::d9#53
+
+Non-authoritative answer:
+Name:	backend.make-nfts-great-again.xyz
+Address: 81.15.150.185
+```
+
+The Fluence deployment ensures our NFT companion service remains accessible and performant for users worldwide.
 
 ## Repository Structure
 
@@ -157,12 +203,6 @@ pnpm run dev
 
 - `POST /api/nft-agent/{chain}/{contract}/{tokenId}/{address}/talk` - Chat with an NFT
 - `GET /api/nft-agent/chains` - Get supported blockchain networks
-
-### Graph MCP
-
-- `GET /api/graph-mcp/chains` - List supported chains
-- `GET /api/graph-mcp/status` - Check MCP connection status
-- `POST /api/graph-mcp/query` - Execute custom SQL queries
 
 ### Health
 
