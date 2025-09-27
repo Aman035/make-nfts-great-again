@@ -226,19 +226,27 @@ Our conversation history:`;
     tokenId: string,
     isOwner: boolean,
   ): number {
-    // Base friendship level starts at 5
-    let friendshipLevel = 5;
+    // Base friendship level starts at 0 for stricter progression
+    let friendshipLevel = 0;
 
     // Calculate based on user memory depth and quality
     const totalInteractions = userMemory.stats.totalInteractions;
     const preferences = Object.keys(userMemory.preferences).length;
 
-    // Memory-based friendship (max 60 points)
-    // More interactions and preferences = deeper friendship
-    const memoryScore = Math.min(totalInteractions * 2 + preferences * 5, 60);
+    // Memory-based friendship with diminishing returns (max 50 points)
+    // Slower growth per interaction and preference
+    let memoryScore = 0;
+    if (totalInteractions > 0) {
+      // Diminishing returns: first 10 interactions get full points, then reduced
+      const baseInteractions = Math.min(totalInteractions, 10);
+      const bonusInteractions = Math.max(0, totalInteractions - 10);
+      memoryScore += baseInteractions * 1 + bonusInteractions * 0.5;
+    }
+    memoryScore += preferences * 2; // Reduced from 5 to 2
+    memoryScore = Math.min(memoryScore, 50); // Reduced max from 60 to 50
     friendshipLevel += memoryScore;
 
-    // Recent activity bonus (max 20 points)
+    // Recent activity bonus (max 15 points, reduced from 20)
     const recentInteractions = userMemory.nftInteractions.filter(
       (interaction) => {
         const interactionTime = new Date(interaction.timestamp);
@@ -246,15 +254,15 @@ Our conversation history:`;
         return interactionTime > oneWeekAgo;
       },
     );
-    friendshipLevel += Math.min(recentInteractions.length * 3, 20);
+    friendshipLevel += Math.min(recentInteractions.length * 1, 15); // Reduced multiplier from 3 to 1
 
-    // Ownership bonus (max 15 points)
+    // Ownership bonus (max 8 points, reduced from 15)
     if (isOwner) {
-      friendshipLevel += 15;
+      friendshipLevel += 8;
     }
 
-    // Cap non-owners at 70% friendship level
-    const maxLevel = isOwner ? 100 : 70;
+    // Cap non-owners at 60% friendship level (reduced from 70%)
+    const maxLevel = isOwner ? 100 : 60;
     return Math.min(Math.max(friendshipLevel, 0), maxLevel);
   }
 
