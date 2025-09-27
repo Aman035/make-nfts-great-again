@@ -4,7 +4,9 @@ Turn any NFT into an AI companion that knows about your on-chain activity and re
 
 <div align="center">
   <img src="docs/1.png" alt="Home Page" width="800" />
-  <p><em>Home page with featured NFT collections</em></p>
+</div>
+<div align="center">
+  <img src="docs/2.png" alt="Chat Interface" width="800" />
 </div>
 
 ## Description
@@ -12,6 +14,10 @@ Turn any NFT into an AI companion that knows about your on-chain activity and re
 Make NFTs Great Again transforms static digital collectibles into intelligent AI companions. Each NFT develops a unique personality based on its traits, collection history, and metadata. Users can chat with their NFTs, and the AI uses real-time blockchain data to provide contextual responses about ownership, transfer history, and on-chain activity.
 
 The system tracks friendship levels through conversations and ownership status, while happiness levels increase based on your digital wealth - ETH holdings, NFT collections, and ERC20 tokens. This creates a dynamic relationship where your NFT companion's mood reflects your blockchain portfolio.
+
+<div align="center">
+  <img src="docs/3.png" alt="How it Works" width="800" />
+</div>
 
 ## How it Works
 
@@ -23,21 +29,11 @@ The system tracks friendship levels through conversations and ownership status, 
 
 The AI uses The Graph's Token API to fetch real-time blockchain data, including NFT metadata, transfer history, user balances, and token holdings. Each conversation is enhanced with this on-chain context, making interactions more meaningful and personalized.
 
-### Screenshots
-
-<div align="center">
-  <img src="docs/2.png" alt="Chat Interface" width="800" />
-  <p><em>Chat interface with NFT companion</em></p>
-</div>
-
-<div align="center">
-  <img src="docs/3.png" alt="How it Works" width="800" />
-  <p><em>How it works page with system architecture</em></p>
-</div>
-
 <div align="center">
   <img src="docs/4.png" alt="Custom NFT Form" width="800" />
-  <p><em>Custom NFT input form</em></p>
+</div>
+<div align="center">
+  <img src="docs/mermaid.svg" alt="Custom NFT Form" width="800" />
 </div>
 
 ## Tech Stack / Integrations
