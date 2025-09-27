@@ -82,6 +82,33 @@ export default function HowItWorksPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-center mb-16"
+        >
+          <Card className="max-w-4xl mx-auto border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
+            <CardContent className="p-8 space-y-6">
+              <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <Sparkles className="h-10 w-10 text-primary-foreground" />
+              </div>
+              <h2 className="text-h3 text-balance">System Architecture</h2>
+              <p className="text-body-large text-muted-foreground text-pretty">
+                Here's how our end-to-end system works, from user interaction to
+                AI response:
+              </p>
+              <div className="w-full max-w-3xl mx-auto">
+                <img
+                  src="/mermaid.svg"
+                  alt="System Architecture Diagram"
+                  className="w-full h-auto rounded-lg border border-primary/20"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
           className="text-center"
         >
           <Card className="max-w-2xl mx-auto border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
@@ -89,11 +116,15 @@ export default function HowItWorksPage() {
               <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                 <Sparkles className="h-10 w-10 text-primary-foreground" />
               </div>
-              <h2 className="text-h3 text-balance">Coming Soon: Learn More!</h2>
+              <h2 className="text-h3 text-balance">
+                Coming Soon: NFT Customization!
+              </h2>
               <p className="text-body-large text-muted-foreground text-pretty">
-                We're working on detailed documentation about our AI technology,
-                personality generation algorithms, and the science behind NFT
-                companionship. Stay tuned for exciting updates!
+                NFT owners will soon be able to customize their collection's
+                characteristics! Tweak mood, friendship levels, intimacy
+                settings to create unique AI companions that reflect your
+                vision. Configure how your NFTs interact, their emotional
+                responses, and relationship dynamics.
               </p>
               <div className="flex items-center justify-center gap-2 text-body-small text-muted-foreground">
                 <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
