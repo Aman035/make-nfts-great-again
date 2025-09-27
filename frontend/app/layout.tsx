@@ -54,6 +54,11 @@ export const metadata: Metadata = {
   description:
     'Talk to your NFTs, build friendships, and explore their personalities.',
   generator: 'v0.app',
+  icons: {
+    icon: '/companion.png',
+    shortcut: '/companion.png',
+    apple: '/companion.png',
+  },
 }
 
 export default function RootLayout({
