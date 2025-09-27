@@ -90,6 +90,7 @@ Our backend is deployed on Fluence's decentralized compute network, providing:
 
 ```bash
 Server IP: 81.15.150.185
+VM ID: 01998c07-24f7-7940-9fed-30ab4479b62e
 Domain (Nginx Reverse Proxy): backend.make-nfts-great-again.xyz
 Swagger: https://backend.make-nfts-great-again.xyz/api/docs
 ```
