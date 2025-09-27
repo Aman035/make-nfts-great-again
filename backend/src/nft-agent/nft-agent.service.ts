@@ -113,15 +113,23 @@ export class NFTAgentService {
 
       // Calculate friendship and happiness levels
       const userMemoryData = this.nftPersonaService.getUserMemory(userAddress);
+
+      // Check if user owns this NFT
+      const isOwner =
+        nftMetadata.owner?.toLowerCase() === userAddress.toLowerCase();
+
+      // Get NFT transfer history for happiness calculation
+      const nftTransferHistory = nftMetadata.recentTransfers || [];
+
       const friendshipLevel = this.nftPersonaService.calculateFriendshipLevel(
         userMemoryData,
         contract,
         tokenId,
+        isOwner,
       );
       const happinessLevel = this.nftPersonaService.calculateHappinessLevel(
-        userMemoryData,
-        contract,
-        tokenId,
+        userSummary,
+        nftTransferHistory,
       );
       const totalInteractions =
         this.nftPersonaService.getTotalInteractionsWithNFT(

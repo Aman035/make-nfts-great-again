@@ -675,7 +675,7 @@ GraphMCPService.prototype.getEthBalance = async function (
     `SELECT 
        balance AS eth_balance,
        timestamp AS last_updated
-     FROM \`${chainConfig.tokenDatabase}\`.mv_native_balances
+     FROM \`${chainConfig.tokenDatabase}\`.balances
      WHERE address = '${addressLower}'
        AND contract = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
      ORDER BY timestamp DESC
@@ -684,7 +684,7 @@ GraphMCPService.prototype.getEthBalance = async function (
   const row = res?.data?.[0] || { eth_balance: 0, last_updated: null };
   return {
     address,
-    balanceEth: Number(row.eth_balance || 0),
+    balanceEth: Number(row.eth_balance || 0) / 1e18,
     lastUpdated: row.last_updated || undefined,
   };
 };

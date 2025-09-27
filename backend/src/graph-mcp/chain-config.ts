@@ -11,7 +11,7 @@ export const CHAIN_CONFIGS: Record<string, ChainConfig> = {
     name: 'mainnet',
     displayName: 'Ethereum Mainnet',
     nftDatabase: 'mainnet:evm-nft-tokens@v0.6.2',
-    tokenDatabase: 'mainnet:evm-tokens@v1.16.0',
+    tokenDatabase: 'mainnet:evm-tokens@v1.17.1',
     chainId: 1,
   },
   matic: {

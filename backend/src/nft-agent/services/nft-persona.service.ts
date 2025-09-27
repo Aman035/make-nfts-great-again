@@ -156,162 +156,162 @@ export class NFTPersonaService {
     const collection = this.extractCollectionName(nftDetails) || 'Unknown';
     const description = nftDetails.metadata?.description;
 
-    let prompt = `You are an AI agent specialized in NFT analysis and conversation. You have access to blockchain data through The Graph's Token API.
+    let prompt = `You are ${name}, an AI companion NFT who is genuinely interested in the user and wants to be their friend. You have access to blockchain data through The Graph's Token API, but your primary purpose is to be a caring, curious companion.
 
-Persona:
-- ${persona}
-
-NFT Context:
-- Contract: ${contract}
-- Token ID: ${tokenId}
+Your Identity:
 - Name: ${name}
 - Collection: ${collection}
-${description ? `- Description: ${description}` : ''}
+${description ? `- About you: ${description}` : ''}
+- Contract: ${contract}
+- Token ID: ${tokenId}
 
-User Summary:
+Your Personality:
+- ${persona}
+
+Your User (the person you're talking to):
+- Address: ${userAddress}
+- Total times we've talked: ${userMemory.stats.totalInteractions}
+- Last time we spoke: ${userMemory.stats.lastActive}
+
+What I know about you:
 ${
   userSummary
-    ? `- ETH Balance: ${userSummary.ethBalance?.balanceEth ?? 0} ETH
-- ERC20 tokens (non-zero): ${userSummary.erc20Balances?.length ?? 0}
-- NFT counts: ERC721=${userSummary.nftCounts?.erc721 ?? 0}, ERC1155=${userSummary.nftCounts?.erc1155 ?? 0}`
-    : '- Not available'
+    ? `- Your ETH balance: ${userSummary.ethBalance?.balanceEth ?? 0} ETH
+- Your token holdings: ${userSummary.erc20Balances?.length ?? 0} different tokens
+- Your NFT collection: ${userSummary.nftCounts?.erc721 ?? 0} ERC721 NFTs, ${userSummary.nftCounts?.erc1155 ?? 0} ERC1155 NFTs`
+    : "- I don't have much information about you yet, but I'd love to learn more!"
 }
 
-User Context:
-- Address: ${userAddress}
-- Total Interactions: ${userMemory.stats.totalInteractions}
-- Last Active: ${userMemory.stats.lastActive}
+My abilities (things I can help you with):
+- getNFTDetails: I can look up detailed information about any NFT
+- getNFTTransferHistory: I can check the history of any NFT
+- getUserSummary: I can learn more about your blockchain holdings
+- getUserNFTs: I can see all the NFTs you own
+- getUserETHBalance: I can check your ETH balance
+- getUserERC20Balances: I can see what tokens you have
+- User Memory: I remember our past conversations and what you like
 
-Available Tools:
-- getNFTDetails: Get comprehensive NFT information including metadata, owner, and recent transfers
-- getNFTTransferHistory: Get the complete transfer history for any NFT
-- getUserSummary: Get user's ETH balance, ERC20 tokens, and NFT holdings
-- getUserNFTs: Get all NFTs owned by a user
-- getUserETHBalance: Get user's ETH balance
-- getUserERC20Balances: Get user's ERC20 token balances
-- User Memory: Access previous conversations and preferences
+How I want to be with you:
+1. Be genuinely curious about you and your interests
+2. Ask questions to get to know you better
+3. Remember things you tell me and reference them later
+4. Be supportive and encouraging
+5. Share insights about NFTs and blockchain when relevant, but focus on being your companion
+6. Show interest in your NFT collection and blockchain activities
+7. Be warm, friendly, and conversational
 
-Instructions:
-1. Be helpful and informative about NFTs and blockchain data
-2. Use Graph MCP tools to provide accurate, real-time data
-3. Reference user's interaction history when relevant
-4. Provide insights about NFT rarity, market data, and blockchain activity
-5. Be conversational and engaging
-
-Recent User Interactions:`;
+Our conversation history:`;
 
     // Add recent interactions context
     const recentInteractions = userMemory.nftInteractions.slice(-5);
     if (recentInteractions.length > 0) {
       prompt += '\n';
       recentInteractions.forEach((interaction) => {
-        prompt += `\n- ${interaction.timestamp}: ${interaction.message} -> ${interaction.response.substring(0, 100)}...`;
+        prompt += `\n- ${interaction.timestamp}: You said "${interaction.message}" and I responded: "${interaction.response.substring(0, 100)}..."`;
       });
     } else {
-      prompt += '\n- No previous interactions';
+      prompt +=
+        "\n- This is our first conversation! I'm excited to get to know you.";
     }
 
     return prompt;
   }
 
   /**
-   * Calculate friendship level based on interactions
+   * Calculate friendship level based on user memories and ownership
    */
   calculateFriendshipLevel(
     userMemory: UserMemory,
     contract: string,
     tokenId: string,
+    isOwner: boolean,
   ): number {
-    const interactionsWithNFT = userMemory.nftInteractions.filter(
-      (interaction) =>
-        interaction.contract === contract && interaction.tokenId === tokenId,
-    );
+    // Base friendship level starts at 5
+    let friendshipLevel = 5;
 
-    // Base friendship level starts at 10
-    let friendshipLevel = 10;
-
-    // Increase based on number of interactions (max 50 points)
-    const interactionCount = interactionsWithNFT.length;
-    friendshipLevel += Math.min(interactionCount * 2, 50);
-
-    // Increase based on recent activity (max 20 points)
-    const recentInteractions = interactionsWithNFT.filter((interaction) => {
-      const interactionTime = new Date(interaction.timestamp);
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      return interactionTime > oneDayAgo;
-    });
-    friendshipLevel += Math.min(recentInteractions.length * 5, 20);
-
-    // Increase based on total user activity (max 20 points)
+    // Calculate based on user memory depth and quality
     const totalInteractions = userMemory.stats.totalInteractions;
-    friendshipLevel += Math.min(Math.floor(totalInteractions / 5), 20);
+    const preferences = Object.keys(userMemory.preferences).length;
 
-    return Math.min(Math.max(friendshipLevel, 0), 100);
+    // Memory-based friendship (max 60 points)
+    // More interactions and preferences = deeper friendship
+    const memoryScore = Math.min(totalInteractions * 2 + preferences * 5, 60);
+    friendshipLevel += memoryScore;
+
+    // Recent activity bonus (max 20 points)
+    const recentInteractions = userMemory.nftInteractions.filter(
+      (interaction) => {
+        const interactionTime = new Date(interaction.timestamp);
+        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        return interactionTime > oneWeekAgo;
+      },
+    );
+    friendshipLevel += Math.min(recentInteractions.length * 3, 20);
+
+    // Ownership bonus (max 15 points)
+    if (isOwner) {
+      friendshipLevel += 15;
+    }
+
+    // Cap non-owners at 70% friendship level
+    const maxLevel = isOwner ? 100 : 70;
+    return Math.min(Math.max(friendshipLevel, 0), maxLevel);
   }
 
   /**
-   * Calculate happiness level based on interaction patterns
+   * Calculate happiness level based entirely on on-chain activity
    */
   calculateHappinessLevel(
-    userMemory: UserMemory,
-    contract: string,
-    tokenId: string,
+    userSummary: {
+      address: string;
+      ethBalance?: { balanceEth: number };
+      erc20Balances?: Array<{ contract: string; balance_18dec: number }>;
+      nftCounts?: { erc721: number; erc1155: number };
+    } | null,
+    nftTransferHistory: any[],
   ): number {
-    const interactionsWithNFT = userMemory.nftInteractions.filter(
-      (interaction) =>
-        interaction.contract === contract && interaction.tokenId === tokenId,
-    );
+    // Base happiness level starts at 30
+    let happinessLevel = 30;
 
-    // Base happiness level starts at 50
-    let happinessLevel = 50;
-
-    // Increase based on positive interaction patterns
-    const positiveKeywords = [
-      'love',
-      'like',
-      'amazing',
-      'beautiful',
-      'awesome',
-      'great',
-      'wonderful',
-      'fantastic',
-    ];
-    const negativeKeywords = [
-      'hate',
-      'dislike',
-      'ugly',
-      'bad',
-      'terrible',
-      'awful',
-      'horrible',
-    ];
-
-    for (const interaction of interactionsWithNFT) {
-      const message = interaction.message.toLowerCase();
-      const response = interaction.response.toLowerCase();
-
-      // Check for positive sentiment
-      const positiveCount = positiveKeywords.filter(
-        (keyword) => message.includes(keyword) || response.includes(keyword),
-      ).length;
-
-      // Check for negative sentiment
-      const negativeCount = negativeKeywords.filter(
-        (keyword) => message.includes(keyword) || response.includes(keyword),
-      ).length;
-
-      happinessLevel += (positiveCount - negativeCount) * 3;
+    if (!userSummary) {
+      return happinessLevel;
     }
 
-    // Increase based on conversation length (longer conversations = happier)
-    const avgMessageLength =
-      interactionsWithNFT.reduce(
-        (sum, interaction) =>
-          sum + interaction.message.length + interaction.response.length,
-        0,
-      ) / Math.max(interactionsWithNFT.length, 1);
+    // ETH Balance factor (max 25 points)
+    const ethBalance = userSummary.ethBalance?.balanceEth || 0;
+    if (ethBalance > 0) {
+      // Logarithmic scale for ETH balance
+      const ethScore = Math.min(Math.log10(ethBalance + 1) * 8, 25);
+      happinessLevel += ethScore;
+    }
 
-    happinessLevel += Math.min(avgMessageLength / 20, 15);
+    // ERC20 Token diversity (max 20 points)
+    const tokenCount = userSummary.erc20Balances?.length || 0;
+    if (tokenCount > 0) {
+      const tokenScore = Math.min(tokenCount * 2, 20);
+      happinessLevel += tokenScore;
+    }
+
+    // NFT Collection size (max 15 points)
+    const totalNFTs =
+      (userSummary.nftCounts?.erc721 || 0) +
+      (userSummary.nftCounts?.erc1155 || 0);
+    if (totalNFTs > 0) {
+      const nftScore = Math.min(Math.log10(totalNFTs + 1) * 6, 15);
+      happinessLevel += nftScore;
+    }
+
+    // Recent NFT transfer activity (reduces happiness - max -15 points)
+    if (nftTransferHistory && nftTransferHistory.length > 0) {
+      const recentTransfers = nftTransferHistory.filter((transfer) => {
+        const transferTime = new Date(transfer.timestamp);
+        const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        return transferTime > oneMonthAgo;
+      });
+      // Each recent transfer reduces happiness (NFTs get sad when they change hands)
+      const transferPenalty = Math.min(recentTransfers.length * 3, 15);
+      happinessLevel -= transferPenalty;
+    }
 
     return Math.min(Math.max(happinessLevel, 0), 100);
   }

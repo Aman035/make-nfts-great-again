@@ -10,9 +10,6 @@ export function Footer() {
             <p className="text-center text-body-small leading-loose text-muted-foreground md:text-left">
               Bringing NFTs to life, one chat at a time.
             </p>
-            <p className="text-caption text-muted-foreground/70">
-              Made with ❤️ by <span className="text-primary">Aman</span>
-            </p>
           </div>
           <div className="flex items-center space-x-4">
             <Button
