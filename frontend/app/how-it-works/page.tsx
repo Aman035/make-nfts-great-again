@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import { Card, CardContent } from "@/components/ui/card"
-import { motion } from "framer-motion"
-import { Sparkles, MessageCircle, Heart, Zap } from "lucide-react"
+import { Card, CardContent } from '@/components/ui/card'
+import { motion } from 'framer-motion'
+import { Sparkles, MessageCircle, Heart, Zap } from 'lucide-react'
 
 export default function HowItWorksPage() {
   return (
@@ -13,10 +13,13 @@ export default function HowItWorksPage() {
         transition={{ duration: 0.8 }}
         className="text-center mb-16"
       >
-        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl mb-6 text-balance">How It Works</h1>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-          Discover the magic behind bringing your NFTs to life as AI companions. Each conversation builds a unique
-          relationship with your digital collectibles.
+        <h1 className="text-h1 mb-6 text-balance text-holographic">
+          How It Works
+        </h1>
+        <p className="text-body-large text-muted-foreground max-w-3xl mx-auto text-pretty">
+          Discover the magic behind bringing your NFTs to life as AI companions.
+          Each conversation builds a unique relationship with your digital
+          collectibles.
         </p>
       </motion.div>
 
@@ -24,27 +27,31 @@ export default function HowItWorksPage() {
         {[
           {
             icon: <Sparkles className="h-8 w-8" />,
-            title: "AI Personality",
-            description: "Each NFT gets a unique AI personality based on its traits and collection history.",
-            color: "from-purple-500 to-pink-500",
+            title: 'AI Personality',
+            description:
+              'Each NFT gets a unique AI personality based on its traits and collection history.',
+            color: 'from-purple-500 to-pink-500',
           },
           {
             icon: <MessageCircle className="h-8 w-8" />,
-            title: "Natural Conversations",
-            description: "Chat naturally with your NFTs using advanced language models and contextual understanding.",
-            color: "from-blue-500 to-cyan-500",
+            title: 'Natural Conversations',
+            description:
+              'Chat naturally with your NFTs using advanced language models and contextual understanding.',
+            color: 'from-blue-500 to-cyan-500',
           },
           {
             icon: <Heart className="h-8 w-8" />,
-            title: "Growing Relationships",
-            description: "Build friendship levels and happiness through meaningful interactions and conversations.",
-            color: "from-red-500 to-pink-500",
+            title: 'Growing Relationships',
+            description:
+              'Build friendship levels and happiness through meaningful interactions and conversations.',
+            color: 'from-red-500 to-pink-500',
           },
           {
             icon: <Zap className="h-8 w-8" />,
-            title: "Real-time Responses",
-            description: "Get instant, personalized responses that evolve based on your conversation history.",
-            color: "from-yellow-500 to-orange-500",
+            title: 'Real-time Responses',
+            description:
+              'Get instant, personalized responses that evolve based on your conversation history.',
+            color: 'from-yellow-500 to-orange-500',
           },
         ].map((feature, index) => (
           <motion.div
@@ -60,8 +67,10 @@ export default function HowItWorksPage() {
                 >
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-balance">{feature.title}</h3>
-                <p className="text-muted-foreground text-pretty">{feature.description}</p>
+                <h3 className="text-h5 text-balance">{feature.title}</h3>
+                <p className="text-body-small text-muted-foreground text-pretty">
+                  {feature.description}
+                </p>
               </CardContent>
             </Card>
           </motion.div>
@@ -79,12 +88,13 @@ export default function HowItWorksPage() {
             <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Sparkles className="h-10 w-10 text-primary-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-balance">Coming Soon: Learn More!</h2>
-            <p className="text-lg text-muted-foreground text-pretty">
-              We're working on detailed documentation about our AI technology, personality generation algorithms, and
-              the science behind NFT companionship. Stay tuned for exciting updates!
+            <h2 className="text-h3 text-balance">Coming Soon: Learn More!</h2>
+            <p className="text-body-large text-muted-foreground text-pretty">
+              We're working on detailed documentation about our AI technology,
+              personality generation algorithms, and the science behind NFT
+              companionship. Stay tuned for exciting updates!
             </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center justify-center gap-2 text-body-small text-muted-foreground">
               <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
               <span>More features in development</span>
             </div>

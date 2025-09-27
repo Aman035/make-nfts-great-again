@@ -1,19 +1,19 @@
-"use client"
+'use client'
 
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { motion, AnimatePresence } from "framer-motion"
-import { Send, Heart } from "lucide-react"
-import Image from "next/image"
+import { useState, useRef, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Send, Heart } from 'lucide-react'
+import Image from 'next/image'
 
 interface Message {
   id: string
   content: string
-  sender: "user" | "nft"
+  sender: 'user' | 'nft'
   timestamp: Date
 }
 
@@ -27,30 +27,37 @@ interface ChatInterfaceProps {
 }
 
 const friendshipLevels = [
-  { level: 0, name: "Stranger", color: "bg-gray-500" },
-  { level: 25, name: "Acquaintance", color: "bg-blue-500" },
-  { level: 50, name: "Friend", color: "bg-green-500" },
-  { level: 75, name: "Best Friend", color: "bg-purple-500" },
-  { level: 100, name: "Soulmate", color: "bg-pink-500" },
+  { level: 0, name: 'Stranger', color: 'bg-gray-500' },
+  { level: 25, name: 'Acquaintance', color: 'bg-blue-500' },
+  { level: 50, name: 'Friend', color: 'bg-green-500' },
+  { level: 75, name: 'Best Friend', color: 'bg-purple-500' },
+  { level: 100, name: 'Soulmate', color: 'bg-pink-500' },
 ]
 
-export function ChatInterface({ nftImage, nftName, nftCollection, network, contract, tokenId }: ChatInterfaceProps) {
+export function ChatInterface({
+  nftImage,
+  nftName,
+  nftCollection,
+  network,
+  contract,
+  tokenId,
+}: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: "1",
+      id: '1',
       content: `Hey there! I'm ${nftName} from the ${nftCollection} collection. Ready to chat?`,
-      sender: "nft",
+      sender: 'nft',
       timestamp: new Date(),
     },
   ])
-  const [inputValue, setInputValue] = useState("")
+  const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [friendshipLevel, setFriendshipLevel] = useState(15)
   const [happinessLevel, setHappinessLevel] = useState(60)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   useEffect(() => {
@@ -58,7 +65,9 @@ export function ChatInterface({ nftImage, nftName, nftCollection, network, contr
   }, [messages])
 
   const getCurrentFriendshipLevel = () => {
-    return friendshipLevels.reduce((prev, current) => (friendshipLevel >= current.level ? current : prev))
+    return friendshipLevels.reduce((prev, current) =>
+      friendshipLevel >= current.level ? current : prev
+    )
   }
 
   const handleSendMessage = async () => {
@@ -67,41 +76,38 @@ export function ChatInterface({ nftImage, nftName, nftCollection, network, contr
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputValue,
-      sender: "user",
+      sender: 'user',
       timestamp: new Date(),
     }
 
     setMessages((prev) => [...prev, userMessage])
-    setInputValue("")
+    setInputValue('')
     setIsTyping(true)
 
     // Simulate API call to backend
-    setTimeout(
-      () => {
-        const nftResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          content: generateNFTResponse(inputValue),
-          sender: "nft",
-          timestamp: new Date(),
-        }
+    setTimeout(() => {
+      const nftResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: generateNFTResponse(inputValue),
+        sender: 'nft',
+        timestamp: new Date(),
+      }
 
-        setMessages((prev) => [...prev, nftResponse])
-        setIsTyping(false)
+      setMessages((prev) => [...prev, nftResponse])
+      setIsTyping(false)
 
-        // Update friendship and happiness levels
-        setFriendshipLevel((prev) => Math.min(100, prev + Math.random() * 5))
-        setHappinessLevel((prev) => Math.min(100, prev + Math.random() * 3))
-      },
-      1000 + Math.random() * 2000,
-    )
+      // Update friendship and happiness levels
+      setFriendshipLevel((prev) => Math.min(100, prev + Math.random() * 5))
+      setHappinessLevel((prev) => Math.min(100, prev + Math.random() * 3))
+    }, 1000 + Math.random() * 2000)
   }
 
   const generateNFTResponse = (userInput: string): string => {
     const responses = [
       "That's really interesting! Tell me more about that.",
-      "I love chatting with you! You always have such cool things to say.",
+      'I love chatting with you! You always have such cool things to say.',
       "Haha, you're funny! I'm enjoying our conversation.",
-      "That reminds me of something from my collection days...",
+      'That reminds me of something from my collection days...',
       "You know, I think we're becoming great friends!",
       "I'm so happy to be talking with you right now!",
       "That's a great point! I never thought about it that way.",
@@ -120,14 +126,17 @@ export function ChatInterface({ nftImage, nftName, nftCollection, network, contr
             <div className="relative flex-shrink-0">
               <div className="relative">
                 <Image
-                  src={nftImage || "/placeholder.svg"}
+                  src={nftImage || '/placeholder.svg'}
                   alt={nftName}
                   width={300}
                   height={300}
                   className="rounded-lg neon-border animate-pulse-glow"
                 />
                 <div className="absolute -top-3 -right-3">
-                  <Badge variant="secondary" className="animate-pulse bg-primary/20 text-primary border-primary">
+                  <Badge
+                    variant="secondary"
+                    className="animate-pulse bg-primary/20 text-primary border-primary"
+                  >
                     Online
                   </Badge>
                 </div>
@@ -137,10 +146,14 @@ export function ChatInterface({ nftImage, nftName, nftCollection, network, contr
 
             <div className="flex-1 space-y-6 text-center lg:text-left min-w-0">
               <div>
-                <h2 className="text-4xl font-bold text-balance text-primary animate-neon-flicker">{nftName}</h2>
-                <p className="text-muted-foreground text-xl mb-2">{nftCollection}</p>
+                <h2 className="text-h2 text-balance text-primary animate-neon-flicker text-digital">
+                  {nftName}
+                </h2>
+                <p className="text-body-large text-muted-foreground mb-2">
+                  {nftCollection}
+                </p>
                 {network && contract && tokenId && (
-                  <p className="text-sm text-muted-foreground font-mono">
+                  <p className="text-body-small text-muted-foreground font-mono">
                     {network}:{contract.slice(0, 8)}...:{tokenId}
                   </p>
                 )}
@@ -149,23 +162,35 @@ export function ChatInterface({ nftImage, nftName, nftCollection, network, contr
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-primary">Friendship Level</span>
-                    <Badge className={`${currentFriendship.color} border border-primary/50`}>
+                    <span className="text-label text-primary">
+                      Friendship Level
+                    </span>
+                    <Badge
+                      className={`${currentFriendship.color} border border-primary/50`}
+                    >
                       {currentFriendship.name}
                     </Badge>
                   </div>
-                  <Progress value={friendshipLevel} className="h-3 bg-muted border border-primary/30" />
+                  <Progress
+                    value={friendshipLevel}
+                    className="h-3 bg-muted border border-primary/30"
+                  />
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-primary">Happiness</span>
+                    <span className="text-label text-primary">Happiness</span>
                     <div className="flex items-center gap-1">
                       <Heart className="h-4 w-4 fill-primary text-primary" />
-                      <span className="text-sm text-primary">{Math.round(happinessLevel)}%</span>
+                      <span className="text-body-small text-primary">
+                        {Math.round(happinessLevel)}%
+                      </span>
                     </div>
                   </div>
-                  <Progress value={happinessLevel} className="h-3 bg-muted border border-primary/30" />
+                  <Progress
+                    value={happinessLevel}
+                    className="h-3 bg-muted border border-primary/30"
+                  />
                 </div>
               </div>
             </div>
@@ -184,20 +209,24 @@ export function ChatInterface({ nftImage, nftName, nftCollection, network, contr
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+                    className={`flex ${
+                      message.sender === 'user'
+                        ? 'justify-end'
+                        : 'justify-start'
+                    }`}
                   >
                     <div
                       className={`max-w-[70%] p-4 rounded-lg border ${
-                        message.sender === "user"
-                          ? "bg-primary/20 text-primary-foreground border-primary/50 neon-border"
-                          : "bg-muted/80 border-primary/20"
+                        message.sender === 'user'
+                          ? 'bg-primary/20 text-primary-foreground border-primary/50 neon-border'
+                          : 'bg-muted/80 border-primary/20'
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
-                      <p className="text-xs opacity-70 mt-2">
+                      <p className="text-body-small">{message.content}</p>
+                      <p className="text-caption opacity-70 mt-2">
                         {message.timestamp.toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
+                          hour: '2-digit',
+                          minute: '2-digit',
                         })}
                       </p>
                     </div>
@@ -216,11 +245,11 @@ export function ChatInterface({ nftImage, nftName, nftCollection, network, contr
                       <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
                       <div
                         className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                        style={{ animationDelay: "0.1s" }}
+                        style={{ animationDelay: '0.1s' }}
                       />
                       <div
                         className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                        style={{ animationDelay: "0.2s" }}
+                        style={{ animationDelay: '0.2s' }}
                       />
                     </div>
                   </div>
@@ -234,7 +263,7 @@ export function ChatInterface({ nftImage, nftName, nftCollection, network, contr
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your message..."
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                 disabled={isTyping}
                 className="bg-muted/50 border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
               />

@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
-import { Wallet, Shield, Zap } from "lucide-react"
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { motion } from 'framer-motion'
+import { Wallet, Shield, Zap } from 'lucide-react'
 
 interface WalletConnectModalProps {
   onConnect: () => void
@@ -12,21 +12,21 @@ interface WalletConnectModalProps {
 
 const walletOptions = [
   {
-    name: "MetaMask",
-    icon: "🦊",
-    description: "Connect using MetaMask wallet",
+    name: 'MetaMask',
+    icon: '🦊',
+    description: 'Connect using MetaMask wallet',
     popular: true,
   },
   {
-    name: "WalletConnect",
-    icon: "🔗",
-    description: "Connect using WalletConnect protocol",
+    name: 'WalletConnect',
+    icon: '🔗',
+    description: 'Connect using WalletConnect protocol',
     popular: false,
   },
   {
-    name: "Coinbase Wallet",
-    icon: "🔵",
-    description: "Connect using Coinbase Wallet",
+    name: 'Coinbase Wallet',
+    icon: '🔵',
+    description: 'Connect using Coinbase Wallet',
     popular: false,
   },
 ]
@@ -59,9 +59,12 @@ export function WalletConnectModal({ onConnect }: WalletConnectModalProps) {
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
               <Wallet className="h-8 w-8 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl text-balance">Connect Your Wallet</CardTitle>
-            <p className="text-muted-foreground text-pretty">
-              Connect your wallet to start chatting with your NFTs and unlock all features.
+            <CardTitle className="text-h3 text-balance">
+              Connect Your Wallet
+            </CardTitle>
+            <p className="text-body text-muted-foreground text-pretty">
+              Connect your wallet to start chatting with your NFTs and unlock
+              all features.
             </p>
           </CardHeader>
 
@@ -79,12 +82,16 @@ export function WalletConnectModal({ onConnect }: WalletConnectModalProps) {
                     <span className="text-2xl">{wallet.icon}</span>
                     <div className="flex-1 text-left">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{wallet.name}</span>
+                        <span className="text-label">{wallet.name}</span>
                         {wallet.popular && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">Popular</span>
+                          <span className="text-caption bg-primary/10 text-primary px-2 py-1 rounded-full">
+                            Popular
+                          </span>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">{wallet.description}</p>
+                      <p className="text-body-small text-muted-foreground">
+                        {wallet.description}
+                      </p>
                     </div>
                     {isConnecting && selectedWallet === wallet.name && (
                       <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -98,20 +105,21 @@ export function WalletConnectModal({ onConnect }: WalletConnectModalProps) {
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div className="space-y-2">
                   <Shield className="h-6 w-6 mx-auto text-green-500" />
-                  <p className="text-xs text-muted-foreground">Secure</p>
+                  <p className="text-caption text-muted-foreground">Secure</p>
                 </div>
                 <div className="space-y-2">
                   <Zap className="h-6 w-6 mx-auto text-yellow-500" />
-                  <p className="text-xs text-muted-foreground">Fast</p>
+                  <p className="text-caption text-muted-foreground">Fast</p>
                 </div>
                 <div className="space-y-2">
                   <Wallet className="h-6 w-6 mx-auto text-blue-500" />
-                  <p className="text-xs text-muted-foreground">Easy</p>
+                  <p className="text-caption text-muted-foreground">Easy</p>
                 </div>
               </div>
 
-              <p className="text-xs text-center text-muted-foreground">
-                By connecting your wallet, you agree to our Terms of Service and Privacy Policy.
+              <p className="text-caption text-center text-muted-foreground">
+                By connecting your wallet, you agree to our Terms of Service and
+                Privacy Policy.
               </p>
             </div>
           </CardContent>

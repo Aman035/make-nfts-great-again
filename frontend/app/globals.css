@@ -79,6 +79,51 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-inter: var(--font-inter);
+  --font-poppins: var(--font-poppins);
+  --font-orbitron: var(--font-orbitron);
+  --font-space-grotesk: var(--font-space-grotesk);
+  --font-rajdhani: var(--font-rajdhani);
+  
+  /* Typography Scale */
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 1.875rem;   /* 30px */
+  --font-size-4xl: 2.25rem;    /* 36px */
+  --font-size-5xl: 3rem;       /* 48px */
+  --font-size-6xl: 3.75rem;    /* 60px */
+  --font-size-7xl: 4.5rem;     /* 72px */
+  --font-size-8xl: 6rem;       /* 96px */
+  --font-size-9xl: 8rem;       /* 128px */
+  
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+  
+  /* Line Heights */
+  --line-height-tight: 1.1;
+  --line-height-snug: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+  
+  /* Letter Spacing */
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0em;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -126,6 +171,279 @@
   }
 }
 
+/* Typography System */
+@layer utilities {
+  /* Premium Heading Styles with Better Fonts */
+  .text-display {
+    font-family: var(--font-poppins);
+    font-size: var(--font-size-8xl);
+    font-weight: var(--font-weight-black);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tighter);
+    text-transform: uppercase;
+  }
+  
+  .text-h1 {
+    font-family: var(--font-poppins);
+    font-size: var(--font-size-7xl);
+    font-weight: var(--font-weight-extrabold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+  
+  .text-h2 {
+    font-family: var(--font-poppins);
+    font-size: var(--font-size-6xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+  
+  .text-h3 {
+    font-family: var(--font-inter);
+    font-size: var(--font-size-5xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-snug);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+  
+  .text-h4 {
+    font-family: var(--font-inter);
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  .text-h5 {
+    font-family: var(--font-inter);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  .text-h6 {
+    font-family: var(--font-inter);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  /* Body Text Styles */
+  .text-body-large {
+    font-family: var(--font-inter);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-relaxed);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  .text-body {
+    font-family: var(--font-inter);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  .text-body-small {
+    font-family: var(--font-inter);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  /* Label and Caption Styles */
+  .text-label {
+    font-family: var(--font-inter);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--letter-spacing-wide);
+  }
+  
+  .text-caption {
+    font-family: var(--font-inter);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--letter-spacing-wide);
+  }
+  
+  /* Special Cyberpunk Styles */
+  .text-neon {
+    text-shadow: 0 0 5px oklch(0.75 0.25 180), 0 0 10px oklch(0.75 0.25 180), 0 0 15px oklch(0.75 0.25 180);
+  }
+  
+  .text-gradient-primary {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .text-gradient-secondary {
+    background: linear-gradient(135deg, var(--secondary), var(--muted-foreground));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  /* Custom Font Styles */
+  .text-title-premium {
+    font-family: var(--font-orbitron);
+    font-weight: var(--font-weight-black);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+    background: linear-gradient(135deg, var(--primary), var(--accent), var(--secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px oklch(0.75 0.25 180 / 0.3));
+  }
+  
+  .text-title-elegant {
+    font-family: var(--font-space-grotesk);
+    font-weight: var(--font-weight-light);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: capitalize;
+  }
+  
+  .text-title-bold {
+    font-family: var(--font-rajdhani);
+    font-weight: var(--font-weight-extrabold);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+  
+  /* Cyberpunk/Sci-Fi Styles */
+  .text-cyberpunk {
+    font-family: var(--font-orbitron);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+    text-shadow: 0 0 10px oklch(0.75 0.25 180), 0 0 20px oklch(0.75 0.25 180);
+  }
+  
+  .text-futuristic {
+    font-family: var(--font-space-grotesk);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+  }
+  
+  .text-tech {
+    font-family: var(--font-rajdhani);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-tight);
+    text-transform: uppercase;
+  }
+  
+  .text-neon-title {
+    font-family: var(--font-orbitron);
+    font-weight: var(--font-weight-black);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+    background: linear-gradient(45deg, 
+      oklch(0.8 0.3 180), 
+      oklch(0.9 0.2 200), 
+      oklch(0.85 0.25 160),
+      oklch(0.8 0.3 180)
+    );
+    background-size: 200% 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: neon-gradient 3s ease-in-out infinite;
+    text-shadow: 0 0 20px oklch(0.75 0.25 180 / 0.5);
+  }
+  
+  .text-holographic {
+    font-family: var(--font-space-grotesk);
+    font-weight: var(--font-weight-bold);
+    background: linear-gradient(135deg, 
+      oklch(0.9 0.1 0), 
+      oklch(0.8 0.2 60), 
+      oklch(0.7 0.3 120), 
+      oklch(0.8 0.2 180), 
+      oklch(0.9 0.1 240), 
+      oklch(0.8 0.2 300)
+    );
+    background-size: 300% 300%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: holographic-shift 4s ease-in-out infinite;
+  }
+  
+  .text-matrix {
+    font-family: var(--font-orbitron);
+    font-weight: var(--font-weight-medium);
+    color: oklch(0.8 0.2 120);
+    text-shadow: 0 0 5px oklch(0.8 0.2 120), 0 0 10px oklch(0.8 0.2 120);
+    letter-spacing: var(--letter-spacing-wide);
+  }
+  
+  .text-digital {
+    font-family: var(--font-rajdhani);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+    background: linear-gradient(90deg, 
+      oklch(0.9 0.1 0), 
+      oklch(0.8 0.2 60), 
+      oklch(0.9 0.1 0)
+    );
+    background-size: 200% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: digital-flow 2s linear infinite;
+  }
+  
+  /* Responsive Typography */
+  @media (max-width: 1024px) {
+    .text-display {
+      font-size: var(--font-size-7xl);
+    }
+    .text-h1 {
+      font-size: var(--font-size-6xl);
+    }
+    .text-h2 {
+      font-size: var(--font-size-5xl);
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .text-display {
+      font-size: var(--font-size-5xl);
+    }
+    .text-h1 {
+      font-size: var(--font-size-4xl);
+    }
+    .text-h2 {
+      font-size: var(--font-size-3xl);
+    }
+    .text-h3 {
+      font-size: var(--font-size-2xl);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .text-display {
+      font-size: var(--font-size-4xl);
+    }
+    .text-h1 {
+      font-size: var(--font-size-3xl);
+    }
+    .text-h2 {
+      font-size: var(--font-size-2xl);
+    }
+  }
+}
+
 /* Updated animations for cyberpunk aesthetic */
 @keyframes float {
   0%,
@@ -157,6 +475,58 @@
   }
 }
 
+/* Custom Font Animations */
+@keyframes neon-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes holographic-shift {
+  0% {
+    background-position: 0% 0%;
+  }
+  25% {
+    background-position: 100% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+@keyframes digital-flow {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
+
+@keyframes cyberpunk-pulse {
+  0%,
+  100% {
+    text-shadow: 0 0 5px oklch(0.75 0.25 180), 0 0 10px oklch(0.75 0.25 180);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 10px oklch(0.75 0.25 180), 0 0 20px oklch(0.75 0.25 180), 0 0 30px oklch(0.75 0.25 180);
+    transform: scale(1.02);
+  }
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
@@ -180,4 +550,50 @@
 .neon-border {
   border: 1px solid oklch(0.75 0.25 180);
   box-shadow: 0 0 5px oklch(0.75 0.25 180 / 0.5), inset 0 0 5px oklch(0.75 0.25 180 / 0.2);
+}
+
+/* 3D Effects */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-gpu {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Enhanced 3D card effects */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.card-3d:hover {
+  transform: rotateX(5deg) rotateY(5deg) translateZ(20px);
+}
+
+/* Interactive scroll indicator */
+.scroll-indicator {
+  position: relative;
+  overflow: hidden;
+}
+
+.scroll-indicator::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  animation: scroll-wave 2s ease-in-out infinite;
+}
+
+@keyframes scroll-wave {
+  0%, 100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
 }
