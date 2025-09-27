@@ -23,7 +23,7 @@ import { TalkRequestDto, TalkResponseDto } from './dto/talk.dto';
 export class NFTAgentController {
   constructor(private readonly nftAgentService: NFTAgentService) {}
 
-  @Post(':chain/:contract/:tokenId/talk')
+  @Post(':chain/:contract/:tokenId/:address/talk')
   @ApiOperation({
     summary: 'Talk to NFT agent',
     description: 'Send a message to the NFT agent and get a response',
@@ -45,7 +45,7 @@ export class NFTAgentController {
   })
   @ApiParam({
     name: 'address',
-    description: 'User address',
+    description: 'User wallet address',
     example: '0x9393ef54480e2bb46AC1EA5D0623cFf0badB99ac',
   })
   @ApiBody({
@@ -69,7 +69,7 @@ export class NFTAgentController {
     @Param('chain') chain: string,
     @Param('contract') contract: string,
     @Param('tokenId') tokenId: string,
-    @Headers('address') address: string,
+    @Param('address') address: string,
     @Body() talkRequest: TalkRequestDto,
   ): Promise<TalkResponseDto> {
     try {
@@ -81,6 +81,11 @@ export class NFTAgentController {
       // Validate token ID
       if (!tokenId.match(/^\d+$/)) {
         throw new BadRequestException('Invalid token ID');
+      }
+
+      // Validate user address
+      if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
+        throw new BadRequestException('Invalid user address');
       }
 
       return await this.nftAgentService.talk(

@@ -507,6 +507,29 @@ Recent User Interactions:`;
         llmResponse.content,
       );
 
+      // Calculate friendship and happiness levels
+      const userMemoryData = this.getUserMemory(userAddress);
+      const friendshipLevel = this.calculateFriendshipLevel(
+        userMemoryData,
+        contract,
+        tokenId,
+      );
+      const happinessLevel = this.calculateHappinessLevel(
+        userMemoryData,
+        contract,
+        tokenId,
+      );
+      const totalInteractions = this.getTotalInteractionsWithNFT(
+        userMemoryData,
+        contract,
+        tokenId,
+      );
+      const lastInteraction = this.getLastInteractionWithNFT(
+        userMemoryData,
+        contract,
+        tokenId,
+      );
+
       return {
         response: llmResponse.content,
         nftInfo: {
@@ -515,13 +538,161 @@ Recent User Interactions:`;
           name: nftMetadata.name,
           collection: nftMetadata.collection,
         },
-        userAddress,
+        userInfo: {
+          address: userAddress,
+          friendshipLevel,
+          happinessLevel,
+          totalInteractions,
+          lastInteraction,
+        },
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Error in talk method:', error);
       throw error;
     }
+  }
+
+  /**
+   * Calculate friendship level based on interactions
+   */
+  private calculateFriendshipLevel(
+    userMemory: UserMemory,
+    contract: string,
+    tokenId: string,
+  ): number {
+    const interactionsWithNFT = userMemory.nftInteractions.filter(
+      (interaction) =>
+        interaction.contract === contract && interaction.tokenId === tokenId,
+    );
+
+    // Base friendship level starts at 10
+    let friendshipLevel = 10;
+
+    // Increase based on number of interactions (max 50 points)
+    const interactionCount = interactionsWithNFT.length;
+    friendshipLevel += Math.min(interactionCount * 2, 50);
+
+    // Increase based on recent activity (max 20 points)
+    const recentInteractions = interactionsWithNFT.filter((interaction) => {
+      const interactionTime = new Date(interaction.timestamp);
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      return interactionTime > oneDayAgo;
+    });
+    friendshipLevel += Math.min(recentInteractions.length * 5, 20);
+
+    // Increase based on total user activity (max 20 points)
+    const totalInteractions = userMemory.stats.totalInteractions;
+    friendshipLevel += Math.min(Math.floor(totalInteractions / 5), 20);
+
+    return Math.min(Math.max(friendshipLevel, 0), 100);
+  }
+
+  /**
+   * Calculate happiness level based on interaction patterns
+   */
+  private calculateHappinessLevel(
+    userMemory: UserMemory,
+    contract: string,
+    tokenId: string,
+  ): number {
+    const interactionsWithNFT = userMemory.nftInteractions.filter(
+      (interaction) =>
+        interaction.contract === contract && interaction.tokenId === tokenId,
+    );
+
+    // Base happiness level starts at 50
+    let happinessLevel = 50;
+
+    // Increase based on positive interaction patterns
+    const positiveKeywords = [
+      'love',
+      'like',
+      'amazing',
+      'beautiful',
+      'awesome',
+      'great',
+      'wonderful',
+      'fantastic',
+    ];
+    const negativeKeywords = [
+      'hate',
+      'dislike',
+      'ugly',
+      'bad',
+      'terrible',
+      'awful',
+      'horrible',
+    ];
+
+    for (const interaction of interactionsWithNFT) {
+      const message = interaction.message.toLowerCase();
+      const response = interaction.response.toLowerCase();
+
+      // Check for positive sentiment
+      const positiveCount = positiveKeywords.filter(
+        (keyword) => message.includes(keyword) || response.includes(keyword),
+      ).length;
+
+      // Check for negative sentiment
+      const negativeCount = negativeKeywords.filter(
+        (keyword) => message.includes(keyword) || response.includes(keyword),
+      ).length;
+
+      happinessLevel += (positiveCount - negativeCount) * 3;
+    }
+
+    // Increase based on conversation length (longer conversations = happier)
+    const avgMessageLength =
+      interactionsWithNFT.reduce(
+        (sum, interaction) =>
+          sum + interaction.message.length + interaction.response.length,
+        0,
+      ) / Math.max(interactionsWithNFT.length, 1);
+
+    happinessLevel += Math.min(avgMessageLength / 20, 15);
+
+    return Math.min(Math.max(happinessLevel, 0), 100);
+  }
+
+  /**
+   * Get total interactions with specific NFT
+   */
+  private getTotalInteractionsWithNFT(
+    userMemory: UserMemory,
+    contract: string,
+    tokenId: string,
+  ): number {
+    return userMemory.nftInteractions.filter(
+      (interaction) =>
+        interaction.contract === contract && interaction.tokenId === tokenId,
+    ).length;
+  }
+
+  /**
+   * Get last interaction timestamp with specific NFT
+   */
+  private getLastInteractionWithNFT(
+    userMemory: UserMemory,
+    contract: string,
+    tokenId: string,
+  ): string {
+    const interactionsWithNFT = userMemory.nftInteractions.filter(
+      (interaction) =>
+        interaction.contract === contract && interaction.tokenId === tokenId,
+    );
+
+    if (interactionsWithNFT.length === 0) {
+      return new Date().toISOString();
+    }
+
+    // Sort by timestamp and get the most recent
+    const sortedInteractions = interactionsWithNFT.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
+
+    return sortedInteractions[0].timestamp;
   }
 
   /**

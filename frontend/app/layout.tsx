@@ -10,8 +10,10 @@ import { Rajdhani } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
+import { Providers } from '@/components/providers'
 import { Suspense } from 'react'
 import './globals.css'
+import '@rainbow-me/rainbowkit/styles.css'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -64,16 +66,18 @@ export default function RootLayout({
       <body
         className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${inter.variable} ${poppins.variable} ${orbitron.variable} ${spaceGrotesk.variable} ${rajdhani.variable}`}
       >
-        <div className="relative flex min-h-screen flex-col">
-          <Suspense fallback={<div>Loading...</div>}>
-            <Navigation />
-          </Suspense>
-          <main className="flex-1">{children}</main>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Footer />
-          </Suspense>
-        </div>
-        <Analytics />
+        <Providers>
+          <div className="relative flex min-h-screen flex-col">
+            <Suspense fallback={<div>Loading...</div>}>
+              <Navigation />
+            </Suspense>
+            <main className="flex-1">{children}</main>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Footer />
+            </Suspense>
+          </div>
+          <Analytics />
+        </Providers>
       </body>
     </html>
   )

@@ -1,50 +1,28 @@
 'use client'
 
-import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { Wallet, Shield, Zap } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useAccount, useEnsName, useEnsAvatar } from 'wagmi'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
-interface WalletConnectModalProps {
-  onConnect: () => void
-}
+export function WalletConnectModal() {
+  const [ConnectButton, setConnectButton] = useState<any>(null)
+  const { address } = useAccount()
+  const { data: ensName } = useEnsName({ address, chainId: 1 })
+  const { data: ensAvatar } = useEnsAvatar({
+    name: ensName || undefined,
+    chainId: 1,
+  })
 
-const walletOptions = [
-  {
-    name: 'MetaMask',
-    icon: '🦊',
-    description: 'Connect using MetaMask wallet',
-    popular: true,
-  },
-  {
-    name: 'WalletConnect',
-    icon: '🔗',
-    description: 'Connect using WalletConnect protocol',
-    popular: false,
-  },
-  {
-    name: 'Coinbase Wallet',
-    icon: '🔵',
-    description: 'Connect using Coinbase Wallet',
-    popular: false,
-  },
-]
-
-export function WalletConnectModal({ onConnect }: WalletConnectModalProps) {
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null)
-
-  const handleConnect = async (walletName: string) => {
-    setSelectedWallet(walletName)
-    setIsConnecting(true)
-
-    // Simulate wallet connection
-    setTimeout(() => {
-      setIsConnecting(false)
-      onConnect()
-    }, 2000)
-  }
+  useEffect(() => {
+    const loadConnectButton = async () => {
+      const { ConnectButton: CB } = await import('@rainbow-me/rainbowkit')
+      setConnectButton(() => CB)
+    }
+    loadConnectButton()
+  }, [])
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
@@ -69,36 +47,156 @@ export function WalletConnectModal({ onConnect }: WalletConnectModalProps) {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            <div className="space-y-3">
-              {walletOptions.map((wallet) => (
-                <Button
-                  key={wallet.name}
-                  variant="outline"
-                  className="w-full h-auto p-4 justify-start hover:border-primary/50 transition-colors duration-300 bg-transparent"
-                  onClick={() => handleConnect(wallet.name)}
-                  disabled={isConnecting}
-                >
-                  <div className="flex items-center gap-3 w-full">
-                    <span className="text-2xl">{wallet.icon}</span>
-                    <div className="flex-1 text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="text-label">{wallet.name}</span>
-                        {wallet.popular && (
-                          <span className="text-caption bg-primary/10 text-primary px-2 py-1 rounded-full">
-                            Popular
-                          </span>
-                        )}
+            <div className="flex justify-center">
+              {ConnectButton ? (
+                <ConnectButton.Custom>
+                  {({
+                    account,
+                    chain,
+                    openAccountModal,
+                    openChainModal,
+                    openConnectModal,
+                    authenticationStatus,
+                    mounted,
+                  }: any) => {
+                    const ready = mounted && authenticationStatus !== 'loading'
+                    const connected =
+                      ready &&
+                      account &&
+                      chain &&
+                      (!authenticationStatus ||
+                        authenticationStatus === 'authenticated')
+
+                    return (
+                      <div
+                        {...(!ready && {
+                          'aria-hidden': true,
+                          style: {
+                            opacity: 0,
+                            pointerEvents: 'none',
+                            userSelect: 'none',
+                          },
+                        })}
+                      >
+                        {(() => {
+                          if (!connected) {
+                            return (
+                              <button
+                                onClick={openConnectModal}
+                                type="button"
+                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 px-6 rounded-lg transition-colors duration-300"
+                              >
+                                Connect Wallet
+                              </button>
+                            )
+                          }
+
+                          if (chain.unsupported) {
+                            return (
+                              <button
+                                onClick={openChainModal}
+                                type="button"
+                                className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-300"
+                              >
+                                Wrong network
+                              </button>
+                            )
+                          }
+
+                          return (
+                            <div className="space-y-4">
+                              {/* ENS Information */}
+                              {ensName && (
+                                <div className="text-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20">
+                                  <div className="flex items-center justify-center gap-3 mb-2">
+                                    <Avatar className="w-8 h-8">
+                                      <AvatarImage
+                                        src={ensAvatar || undefined}
+                                        alt={ensName}
+                                      />
+                                      <AvatarFallback>
+                                        {ensName.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="text-left">
+                                      <p className="font-semibold text-primary">
+                                        {ensName}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {ensAvatar
+                                          ? 'ENS Avatar'
+                                          : 'No avatar set'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={openChainModal}
+                                  type="button"
+                                  className="flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground font-medium py-2 px-4 rounded-lg transition-colors duration-300"
+                                >
+                                  {chain.hasIcon && (
+                                    <div
+                                      style={{
+                                        background: chain.iconBackground,
+                                        width: 20,
+                                        height: 20,
+                                        borderRadius: 999,
+                                        overflow: 'hidden',
+                                        marginRight: 4,
+                                      }}
+                                    >
+                                      {chain.iconUrl && (
+                                        <img
+                                          alt={chain.name ?? 'Chain icon'}
+                                          src={chain.iconUrl}
+                                          style={{ width: 20, height: 20 }}
+                                        />
+                                      )}
+                                    </div>
+                                  )}
+                                  {chain.name}
+                                </button>
+
+                                <button
+                                  onClick={openAccountModal}
+                                  type="button"
+                                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 px-4 rounded-lg transition-colors duration-300 flex items-center gap-2"
+                                >
+                                  <Avatar className="w-5 h-5">
+                                    <AvatarImage
+                                      src={ensAvatar || undefined}
+                                      alt={ensName || account.displayName}
+                                    />
+                                    <AvatarFallback className="text-xs">
+                                      {ensName
+                                        ? ensName.charAt(0).toUpperCase()
+                                        : account.displayName
+                                            .charAt(0)
+                                            .toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span>{ensName || account.displayName}</span>
+                                  {account.displayBalance
+                                    ? ` (${account.displayBalance})`
+                                    : ''}
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })()}
                       </div>
-                      <p className="text-body-small text-muted-foreground">
-                        {wallet.description}
-                      </p>
-                    </div>
-                    {isConnecting && selectedWallet === wallet.name && (
-                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    )}
-                  </div>
-                </Button>
-              ))}
+                    )
+                  }}
+                </ConnectButton.Custom>
+              ) : (
+                <div className="w-full bg-muted text-muted-foreground font-medium py-3 px-6 rounded-lg text-center">
+                  Loading wallet connection...
+                </div>
+              )}
             </div>
 
             <div className="space-y-4 pt-4 border-t">

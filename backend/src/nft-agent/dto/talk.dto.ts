@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsObject, IsNumber } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class TalkRequestDto {
@@ -16,6 +16,45 @@ export class TalkRequestDto {
   @IsOptional()
   @IsObject()
   context?: Record<string, any>;
+}
+
+export class UserInfoDto {
+  @ApiProperty({
+    description: 'User wallet address',
+    example: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+  })
+  address: string;
+
+  @ApiProperty({
+    description: 'Friendship level with the NFT (0-100)',
+    example: 75,
+    minimum: 0,
+    maximum: 100,
+  })
+  @IsNumber()
+  friendshipLevel: number;
+
+  @ApiProperty({
+    description: 'Happiness level of the NFT (0-100)',
+    example: 85,
+    minimum: 0,
+    maximum: 100,
+  })
+  @IsNumber()
+  happinessLevel: number;
+
+  @ApiProperty({
+    description: 'Total number of interactions with this NFT',
+    example: 12,
+  })
+  @IsNumber()
+  totalInteractions: number;
+
+  @ApiProperty({
+    description: 'Last interaction timestamp',
+    example: '2024-01-15T10:30:00Z',
+  })
+  lastInteraction: string;
 }
 
 export class TalkResponseDto {
@@ -42,10 +81,10 @@ export class TalkResponseDto {
   };
 
   @ApiProperty({
-    description: 'User address that initiated the conversation',
-    example: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+    description: 'User information including relationship metrics',
+    type: UserInfoDto,
   })
-  userAddress: string;
+  userInfo: UserInfoDto;
 
   @ApiProperty({
     description: 'Conversation timestamp',

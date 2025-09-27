@@ -1,9 +1,10 @@
-"use client"
+'use client'
 
-import { Suspense, useState } from "react"
-import { ChatInterface } from "@/components/chat-interface"
-import { WalletConnectModal } from "@/components/wallet-connect-modal"
-import { Card, CardContent } from "@/components/ui/card"
+import { Suspense } from 'react'
+import { ChatInterface } from '@/components/chat-interface'
+import { WalletConnectModal } from '@/components/wallet-connect-modal'
+import { Card, CardContent } from '@/components/ui/card'
+import { useAccount } from 'wagmi'
 
 interface TalkPageProps {
   params: {
@@ -12,92 +13,99 @@ interface TalkPageProps {
 }
 
 function TalkPageContent({ params }: TalkPageProps) {
-  const [isWalletConnected, setIsWalletConnected] = useState(false)
+  const { isConnected } = useAccount()
 
-  // Parse the nftId parameter (format: ethereum:contract:tokenid)
+  // Parse the nftId parameter (format: network:contract:tokenId)
   const parseNFTId = (nftId: string) => {
-    const parts = nftId.split(":")
+    console.log('Parsing NFT ID:', nftId)
+
+    // URL decode the nftId in case it's encoded
+    const decodedNftId = decodeURIComponent(nftId)
+    console.log('Decoded NFT ID:', decodedNftId)
+
+    const parts = decodedNftId.split(':')
+    console.log('Split parts:', parts)
+
     if (parts.length === 3) {
+      const [network, contract, tokenId] = parts
+      console.log('Parsed NFT data:', { network, contract, tokenId })
+
       return {
-        network: parts[0],
-        contract: parts[1],
-        tokenId: parts[2],
+        network,
+        contract,
+        tokenId,
+        name: undefined, // Will be fetched from backend
+        collection: undefined, // Will be fetched from backend
+        image: '/placeholder.svg', // Default image
       }
     }
 
     // Fallback for collection names
     const collections: Record<string, any> = {
       milady: {
-        name: "Milady #1234",
-        collection: "Milady Maker",
-        image: "/cute-anime-girl-nft-character-with-pink-hair.jpg",
-        network: "ethereum",
-        contract: "0x5af0d9827e0c53e4799bb226655a1de152a425a5",
-        tokenId: "1234",
+        name: 'Milady #1234',
+        collection: 'Milady Maker',
+        image: '/milady.jpeg',
+        network: 'mainnet',
+        contract: '0x5af0d9827e0c53e4799bb226655a1de152a425a5',
+        tokenId: '1234',
       },
       azuki: {
-        name: "Azuki #5678",
-        collection: "Azuki",
-        image: "/anime-character-nft-with-red-hoodie-and-cool-style.jpg",
-        network: "ethereum",
-        contract: "0xed5af388653567af2f388e6224dc7c4b3241c544",
-        tokenId: "5678",
+        name: 'Azuki #5678',
+        collection: 'Azuki',
+        image: '/azuki.jpeg',
+        network: 'mainnet',
+        contract: '0xed5af388653567af2f388e6224dc7c4b3241c544',
+        tokenId: '5678',
       },
       pudgy: {
-        name: "Pudgy Penguin #9012",
-        collection: "Pudgy Penguins",
-        image: "/cute-chubby-penguin-nft-character-with-colorful-ac.jpg",
-        network: "ethereum",
-        contract: "0xbd3531da5cf5857e7cfaa92426877b022e612cf8",
-        tokenId: "9012",
+        name: 'Pudgy Penguin #9012',
+        collection: 'Pudgy Penguins',
+        image: '/pudgy.png',
+        network: 'mainnet',
+        contract: '0xbd3531da5cf5857e7cfaa92426877b022e612cf8',
+        tokenId: '9012',
       },
-      "bored-ape": {
-        name: "Bored Ape #3456",
-        collection: "Bored Ape Yacht Club",
-        image: "/cool-ape-nft-character-with-sunglasses-and-hat.jpg",
-        network: "ethereum",
-        contract: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
-        tokenId: "3456",
+      'bored-ape': {
+        name: 'Bored Ape #3456',
+        collection: 'Bored Ape Yacht Club',
+        image: '/random-nft.jpg',
+        network: 'mainnet',
+        contract: '0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d',
+        tokenId: '3456',
       },
     }
 
     return (
-      collections[nftId] || {
-        name: `NFT #${nftId}`,
-        collection: "Unknown Collection",
-        image: "/random-nft.jpg",
-        network: "ethereum",
-        contract: "unknown",
-        tokenId: nftId,
+      collections[decodedNftId] || {
+        name: `NFT #${decodedNftId}`,
+        collection: 'Unknown Collection',
+        image: '/placeholder.svg',
+        network: 'mainnet',
+        contract: 'unknown',
+        tokenId: decodedNftId,
       }
     )
   }
 
   const nftData = parseNFTId(params.nftId)
 
-  if (!isWalletConnected) {
-    return <WalletConnectModal onConnect={() => setIsWalletConnected(true)} />
+  if (!isConnected) {
+    return <WalletConnectModal />
   }
 
   return (
-    <div className="container py-8 px-4 md:px-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4 text-balance text-primary animate-neon-flicker">
-          Chat with Your NFT
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-          Start building a friendship with your digital companion. The more you chat, the stronger your bond becomes!
-        </p>
+    <div className="py-8 px-4 md:px-6">
+      <div className="w-full max-w-6xl mx-auto">
+        <ChatInterface
+          nftImage={nftData.image}
+          nftName={nftData.name}
+          nftCollection={nftData.collection}
+          network={nftData.network}
+          contract={nftData.contract}
+          tokenId={nftData.tokenId}
+        />
       </div>
-
-      <ChatInterface
-        nftImage={nftData.image}
-        nftName={nftData.name}
-        nftCollection={nftData.collection}
-        network={nftData.network}
-        contract={nftData.contract}
-        tokenId={nftData.tokenId}
-      />
     </div>
   )
 }
@@ -106,12 +114,18 @@ export default function TalkPage({ params }: TalkPageProps) {
   return (
     <Suspense
       fallback={
-        <div className="container py-8 px-4 md:px-6">
-          <Card className="neon-border bg-card/80 backdrop-blur-sm">
-            <CardContent className="p-8 text-center">
-              <p className="text-primary">Loading your NFT companion...</p>
-            </CardContent>
-          </Card>
+        <div className="py-8 px-4 md:px-6">
+          <div className="w-full max-w-6xl mx-auto cyberpunk-grid">
+            <Card className="neon-border bg-card/80 backdrop-blur-sm">
+              <CardContent className="p-8 text-center">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-primary/20 rounded mb-4 mx-auto w-64"></div>
+                  <div className="h-4 bg-muted rounded mb-2 mx-auto w-48"></div>
+                  <div className="h-4 bg-muted rounded mx-auto w-32"></div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       }
     >
