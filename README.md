@@ -9,6 +9,14 @@ Turn any NFT into an AI companion that knows about your on-chain activity and re
   <img src="docs/2.png" alt="Chat Interface" width="800" />
 </div>
 
+## Live Demo
+
+🌐 **Live Application**: [make-nfts-great-again.xyz](https://make-nfts-great-again.xyz)
+
+📚 **API Documentation**: [backend.make-nfts-great-again.xyz/api/docs](https://backend.make-nfts-great-again.xyz/api/docs)
+
+Try chatting with popular NFT collections like Milady, Azuki, or Pudgy Penguins, or enter any NFT contract address to create your own AI companion!
+
 ## Description
 
 Make NFTs Great Again transforms static digital collectibles into intelligent AI companions. Each NFT develops a unique personality based on its traits, collection history, and metadata. Users can chat with their NFTs, and the AI uses real-time blockchain data to provide contextual responses about ownership, transfer history, and on-chain activity.
