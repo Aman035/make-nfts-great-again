@@ -130,7 +130,10 @@ export function ChatInterface({
     setIsTyping(true)
     setError(null)
 
-    const apiUrl = `https://backend.make-nfts-great-again.xyz/api/nft-agent/${network}/${contract}/${tokenId}/${address}/talk`
+    const apiUrl = `${
+      process.env.NEXT_PUBLIC_API_URL ||
+      'https://backend.make-nfts-great-again.xyz'
+    }/api/nft-agent/${network}/${contract}/${tokenId}/${address}/talk`
     console.log('Making API call to:', apiUrl)
     console.log('Request body:', {
       message: inputValue,

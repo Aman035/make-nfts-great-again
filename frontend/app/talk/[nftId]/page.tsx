@@ -125,7 +125,10 @@ function TalkPageContent({ params }: TalkPageProps) {
       })
 
       const response = await fetch(
-        `http://localhost:3001/api/nft-agent/${network}/${contract}/${tokenId}/${userAddress}/talk`,
+        `${
+          process.env.NEXT_PUBLIC_API_URL ||
+          'https://backend.make-nfts-great-again.xyz'
+        }/api/nft-agent/${network}/${contract}/${tokenId}/${userAddress}/talk`,
         {
           method: 'POST',
           headers: {
