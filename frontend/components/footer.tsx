@@ -11,7 +11,7 @@ export function Footer() {
               Bringing NFTs to life, one chat at a time.
             </p>
             <p className="text-caption text-muted-foreground/70">
-              © 2025 Make NFTs Great Again. All rights reserved.
+              Made with ❤️ by <span className="text-primary">Aman</span>
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -22,11 +22,11 @@ export function Footer() {
               className="text-primary hover:text-primary-foreground hover:bg-primary/20 border border-primary/20 hover:border-primary/50"
             >
               <Link
-                href="https://twitter.com"
+                href="https://x.com/m_AmanGupta"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Twitter/X
+                X
               </Link>
             </Button>
             <Button
@@ -36,7 +36,7 @@ export function Footer() {
               className="text-primary hover:text-primary-foreground hover:bg-primary/20 border border-primary/20 hover:border-primary/50"
             >
               <Link
-                href="https://github.com"
+                href="https://github.com/Aman035"
                 target="_blank"
                 rel="noopener noreferrer"
               >
