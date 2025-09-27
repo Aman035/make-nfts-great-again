@@ -8,11 +8,46 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { GraphMCPService } from './graph-mcp.service';
+import { getSupportedChains } from './chain-config';
 
 @ApiTags('graph-mcp')
 @Controller('graph-mcp')
 export class GraphMCPController {
   constructor(private readonly graphMCPService: GraphMCPService) {}
+
+  @Get('chains')
+  @ApiOperation({
+    summary: 'Get supported chains',
+    description: 'Get list of supported blockchain networks',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of supported chains',
+    schema: {
+      type: 'object',
+      properties: {
+        chains: {
+          type: 'array',
+          items: { type: 'string' },
+          example: [
+            'mainnet',
+            'matic',
+            'arbitrum-one',
+            'optimism',
+            'base',
+            'bsc',
+            'avalanche',
+            'unichain',
+          ],
+        },
+      },
+    },
+  })
+  getSupportedChains() {
+    return {
+      chains: getSupportedChains(),
+    };
+  }
 
   @Get('status')
   @ApiOperation({
@@ -164,71 +199,203 @@ export class GraphMCPController {
     return { result };
   }
 
-  @Get('nft/:contract/:tokenId')
+  @Get(':chain/nft/:contract/:tokenId')
   @ApiOperation({
     summary: 'Get NFT details',
     description:
       'Returns NFT metadata, token URI, owner and recent transfers for an ERC-721 token',
   })
+  @ApiParam({
+    name: 'chain',
+    description: 'Blockchain network',
+    enum: [
+      'mainnet',
+      'matic',
+      'arbitrum-one',
+      'optimism',
+      'base',
+      'bsc',
+      'avalanche',
+      'unichain',
+    ],
+  })
   @ApiParam({ name: 'contract', description: 'ERC-721 contract address' })
   @ApiParam({ name: 'tokenId', description: 'Token ID' })
   @ApiResponse({ status: 200, description: 'NFT details' })
   async getNftDetails(
+    @Param('chain') chain: string,
     @Param('contract') contract: string,
     @Param('tokenId') tokenId: string,
   ) {
-    const result = await this.graphMCPService.getNFTDetails(contract, tokenId);
+    const result = await this.graphMCPService.getNFTDetails(
+      contract,
+      tokenId,
+      chain,
+    );
     return { result };
   }
 
-  @Get('address/:address/eth-balance')
+  @Get(':chain/address/:address/eth-balance')
   @ApiOperation({
     summary: 'Get ETH balance',
     description:
-      'Returns native ETH balance for an address on Ethereum mainnet',
+      'Returns native ETH balance for an address on the specified chain',
+  })
+  @ApiParam({
+    name: 'chain',
+    description: 'Blockchain network',
+    enum: [
+      'mainnet',
+      'matic',
+      'arbitrum-one',
+      'optimism',
+      'base',
+      'bsc',
+      'avalanche',
+      'unichain',
+    ],
   })
   @ApiParam({ name: 'address', description: 'Wallet address' })
   @ApiResponse({ status: 200, description: 'ETH balance' })
-  async getEthBalance(@Param('address') address: string) {
-    const result = await this.graphMCPService.getEthBalance(address);
+  async getEthBalance(
+    @Param('chain') chain: string,
+    @Param('address') address: string,
+  ) {
+    const result = await this.graphMCPService.getEthBalance(address, chain);
     return { result };
   }
 
-  @Get('address/:address/erc20-balances')
+  @Get(':chain/address/:address/erc20-balances')
   @ApiOperation({
     summary: 'Get ERC-20 balances',
     description:
       'Returns non-zero ERC-20 balances for an address (18-decimal scaled)',
   })
+  @ApiParam({
+    name: 'chain',
+    description: 'Blockchain network',
+    enum: [
+      'mainnet',
+      'matic',
+      'arbitrum-one',
+      'optimism',
+      'base',
+      'bsc',
+      'avalanche',
+      'unichain',
+    ],
+  })
   @ApiParam({ name: 'address', description: 'Wallet address' })
   @ApiResponse({ status: 200, description: 'ERC-20 balances' })
-  async getErc20Balances(@Param('address') address: string) {
-    const result = await this.graphMCPService.getERC20Balances(address);
+  async getErc20Balances(
+    @Param('chain') chain: string,
+    @Param('address') address: string,
+  ) {
+    const result = await this.graphMCPService.getERC20Balances(address, chain);
     return { result };
   }
 
-  @Get('address/:address/nfts')
+  @Get(':chain/address/:address/nfts')
   @ApiOperation({
     summary: 'Get NFTs owned',
     description: 'Returns ERC-721 and ERC-1155 tokens owned by an address',
   })
+  @ApiParam({
+    name: 'chain',
+    description: 'Blockchain network',
+    enum: [
+      'mainnet',
+      'matic',
+      'arbitrum-one',
+      'optimism',
+      'base',
+      'bsc',
+      'avalanche',
+      'unichain',
+    ],
+  })
   @ApiParam({ name: 'address', description: 'Wallet address' })
   @ApiResponse({ status: 200, description: 'NFTs owned' })
-  async getNftsOwned(@Param('address') address: string) {
-    const result = await this.graphMCPService.getNFTsOwned(address);
+  async getNftsOwned(
+    @Param('chain') chain: string,
+    @Param('address') address: string,
+  ) {
+    const result = await this.graphMCPService.getNFTsOwned(address, chain);
     return { result };
   }
 
-  @Get('address/:address/summary')
+  @Get(':chain/address/:address/summary')
   @ApiOperation({
     summary: 'Get user summary',
     description:
       'Aggregated summary: ETH balance, ERC-20 balances, NFT counts, and last transaction',
   })
+  @ApiParam({
+    name: 'chain',
+    description: 'Blockchain network',
+    enum: [
+      'mainnet',
+      'matic',
+      'arbitrum-one',
+      'optimism',
+      'base',
+      'bsc',
+      'avalanche',
+      'unichain',
+    ],
+  })
   @ApiParam({ name: 'address', description: 'Wallet address' })
   @ApiResponse({ status: 200, description: 'User summary' })
-  async getUserSummary(@Param('address') address: string) {
-    const result = await this.graphMCPService.getUserSummary(address);
+  async getUserSummary(
+    @Param('chain') chain: string,
+    @Param('address') address: string,
+  ) {
+    const result = await this.graphMCPService.getUserSummary(address, chain);
+    return { result };
+  }
+
+  @Get(':chain/nft/:contract/:tokenId/transfers')
+  @ApiOperation({
+    summary: 'Get NFT transfer history',
+    description:
+      'Returns transfer history for an ERC-721 token including from/to addresses, transaction hashes, and timestamps',
+  })
+  @ApiParam({
+    name: 'chain',
+    description: 'Blockchain network',
+    enum: [
+      'mainnet',
+      'matic',
+      'arbitrum-one',
+      'optimism',
+      'base',
+      'bsc',
+      'avalanche',
+      'unichain',
+    ],
+  })
+  @ApiParam({ name: 'contract', description: 'ERC-721 contract address' })
+  @ApiParam({ name: 'tokenId', description: 'Token ID' })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Maximum number of transfers to return',
+    required: false,
+    type: 'number',
+    example: 10,
+  })
+  @ApiResponse({ status: 200, description: 'NFT transfer history' })
+  async getNftTransferHistory(
+    @Param('chain') chain: string,
+    @Param('contract') contract: string,
+    @Param('tokenId') tokenId: string,
+    @Query('limit') limit?: number,
+  ) {
+    const result = await this.graphMCPService.getNFTTransferHistory(
+      contract,
+      tokenId,
+      chain,
+      limit || 10,
+    );
     return { result };
   }
 }

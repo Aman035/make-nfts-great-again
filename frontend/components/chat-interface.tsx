@@ -25,6 +25,8 @@ interface ChatInterfaceProps {
   network?: string
   contract?: string
   tokenId?: string
+  initialFriendshipLevel?: number
+  initialHappinessLevel?: number
 }
 
 interface TalkResponse {
@@ -61,6 +63,8 @@ export function ChatInterface({
   network = 'mainnet',
   contract,
   tokenId,
+  initialFriendshipLevel = 0,
+  initialHappinessLevel = 0,
 }: ChatInterfaceProps) {
   const { address } = useAccount()
   const [messages, setMessages] = useState<Message[]>([
@@ -73,8 +77,8 @@ export function ChatInterface({
   ])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [friendshipLevel, setFriendshipLevel] = useState(0)
-  const [happinessLevel, setHappinessLevel] = useState(0)
+  const [friendshipLevel, setFriendshipLevel] = useState(initialFriendshipLevel)
+  const [happinessLevel, setHappinessLevel] = useState(initialHappinessLevel)
   const [error, setError] = useState<string | null>(null)
   const [isClient, setIsClient] = useState(false)
   const [nftInfo, setNftInfo] = useState<{
@@ -230,11 +234,12 @@ export function ChatInterface({
             <div className="relative flex-shrink-0">
               <div className="relative">
                 <Image
-                  src={nftInfo.image || '/placeholder.svg'}
+                  src={nftInfo.image || '/companion.png'}
                   alt={nftInfo.name || 'NFT'}
                   width={300}
                   height={300}
                   className="rounded-lg neon-border animate-pulse-glow"
+                  priority
                 />
                 <div className="absolute -top-3 -right-3">
                   <Badge

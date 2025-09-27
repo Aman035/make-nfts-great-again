@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { spawn, ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
+import { getChainConfig } from './chain-config';
 
 export interface GraphMCPDatabase {
   name: string;
@@ -322,8 +323,6 @@ export class GraphMCPService extends EventEmitter implements OnModuleInit {
         },
       });
 
-      this.logger.log('Query raw result:', result);
-
       // Normalize MCP tool response: many tools return { content: [{ type: 'text', text: '{"data":...}' }] }
       const content = (result as any)?.content;
       if (Array.isArray(content) && content.length > 0) {
@@ -425,11 +424,24 @@ export interface GraphMCPService {
   getNFTDetails(
     contract: string,
     tokenId: string | number,
+    chain?: string,
   ): Promise<NFTDetailsResult>;
-  getEthBalance(address: string): Promise<EthBalanceResult>;
-  getERC20Balances(address: string): Promise<Erc20BalanceRow[]>;
-  getNFTsOwned(address: string): Promise<AddressNftsOwnedResult>;
-  getUserSummary(address: string): Promise<{
+  getNFTTransferHistory(
+    contract: string,
+    tokenId: string | number,
+    chain?: string,
+    limit?: number,
+  ): Promise<any>;
+  getEthBalance(address: string, chain?: string): Promise<EthBalanceResult>;
+  getERC20Balances(address: string, chain?: string): Promise<Erc20BalanceRow[]>;
+  getNFTsOwned(
+    address: string,
+    chain?: string,
+  ): Promise<AddressNftsOwnedResult>;
+  getUserSummary(
+    address: string,
+    chain?: string,
+  ): Promise<{
     address: string;
     ethBalance?: EthBalanceResult;
     erc20Balances?: Erc20BalanceRow[];
@@ -441,16 +453,18 @@ GraphMCPService.prototype.getNFTDetails = async function (
   this: GraphMCPService,
   contract: string,
   tokenId: string | number,
+  chain: string = 'mainnet',
 ): Promise<NFTDetailsResult> {
   const contractLower = contract.toLowerCase();
   const tokenIdString = String(tokenId);
+  const chainConfig = getChainConfig(chain);
 
   // metadata
   let metadata: NFTDetailsResult['metadata'] = null;
   try {
     const metaRes = await this.runQuery(
       `SELECT type, name, description, media_uri, attributes, metadata_json
-       FROM \`mainnet:evm-nft-tokens@v0.6.2\`.nft_metadata
+       FROM \`${chainConfig.nftDatabase}\`.nft_metadata
        WHERE contract = '${contractLower}' AND token_id = ${tokenIdString}
        LIMIT 1`,
     );
@@ -472,7 +486,7 @@ GraphMCPService.prototype.getNFTDetails = async function (
   try {
     const uriRes = await this.runQuery(
       `SELECT uri
-       FROM \`mainnet:evm-nft-tokens@v0.6.2\`.erc721_metadata_by_token
+       FROM \`${chainConfig.nftDatabase}\`.erc721_metadata_by_token
        WHERE contract = '${contractLower}' AND token_id = ${tokenIdString}
        ORDER BY timestamp DESC
        LIMIT 1`,
@@ -487,7 +501,7 @@ GraphMCPService.prototype.getNFTDetails = async function (
   try {
     const ownerRes = await this.runQuery(
       `SELECT owner
-       FROM \`mainnet:evm-nft-tokens@v0.6.2\`.erc721_owners
+       FROM \`${chainConfig.nftDatabase}\`.erc721_owners
        WHERE contract = '${contractLower}' AND token_id = ${tokenIdString}
        LIMIT 1`,
     );
@@ -501,7 +515,7 @@ GraphMCPService.prototype.getNFTDetails = async function (
   try {
     const txRes = await this.runQuery(
       `SELECT \`from\` AS from_address, \`to\` AS to_address, tx_hash, block_num, timestamp
-       FROM \`mainnet:evm-nft-tokens@v0.6.2\`.erc721_transfers
+       FROM \`${chainConfig.nftDatabase}\`.erc721_transfers
        WHERE contract = '${contractLower}' AND token_id = ${tokenIdString}
        ORDER BY timestamp DESC
        LIMIT 10`,
@@ -519,18 +533,51 @@ GraphMCPService.prototype.getNFTDetails = async function (
   };
 };
 
+GraphMCPService.prototype.getNFTTransferHistory = async function (
+  this: GraphMCPService,
+  contract: string,
+  tokenId: string | number,
+  chain: string = 'mainnet',
+  limit: number = 10,
+): Promise<any> {
+  const contractLower = contract.toLowerCase();
+  const tokenIdString = String(tokenId);
+  const chainConfig = getChainConfig(chain);
+
+  try {
+    const transferHistory = await this.runQuery(
+      `SELECT \`from\` AS from_address, \`to\` AS to_address, tx_hash, block_num, timestamp
+       FROM \`${chainConfig.nftDatabase}\`.erc721_transfers
+       WHERE contract = '${contractLower}' AND token_id = ${tokenIdString}
+       ORDER BY timestamp DESC
+       LIMIT ${limit}`,
+    );
+    return transferHistory;
+  } catch (error) {
+    console.error(
+      `Error getting NFT transfer history for ${contract}:${tokenId}:`,
+      error,
+    );
+    return { data: [], error: 'Failed to fetch transfer history' };
+  }
+};
+
 GraphMCPService.prototype.getEthBalance = async function (
   this: GraphMCPService,
   address: string,
+  chain: string = 'mainnet',
 ): Promise<EthBalanceResult> {
+  const chainConfig = getChainConfig(chain);
   const addressLower = address.toLowerCase();
   const res = await this.runQuery(
     `SELECT 
-       CAST(argMax(balance, timestamp) AS Float64) / 1e18 AS eth_balance,
-       argMax(timestamp, timestamp) AS last_updated
-     FROM \`mainnet:evm-tokens@v1.17.2\`.balances
-     WHERE lower(address) = '${addressLower}'
-       AND contract = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'`,
+       balance AS eth_balance,
+       timestamp AS last_updated
+     FROM \`${chainConfig.tokenDatabase}\`.mv_native_balances
+     WHERE address = '${addressLower}'
+       AND contract = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+     ORDER BY timestamp DESC
+     LIMIT 1`,
   );
   const row = res?.data?.[0] || { eth_balance: 0, last_updated: null };
   return {
@@ -543,15 +590,17 @@ GraphMCPService.prototype.getEthBalance = async function (
 GraphMCPService.prototype.getERC20Balances = async function (
   this: GraphMCPService,
   address: string,
+  chain: string = 'mainnet',
 ): Promise<Erc20BalanceRow[]> {
   const addressLower = address.toLowerCase();
+  const chainConfig = getChainConfig(chain);
   const res = await this.runQuery(
     `SELECT 
        contract,
        argMax(balance, timestamp) AS balance_raw,
        CAST(argMax(balance, timestamp) AS Float64) / 1e18 AS balance_18dec,
        argMax(timestamp, timestamp) AS last_updated
-     FROM \`mainnet:evm-tokens@v1.17.2\`.balances
+     FROM \`${chainConfig.tokenDatabase}\`.balances
      WHERE lower(address) = '${addressLower}'
        AND contract != '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
      GROUP BY contract
@@ -570,18 +619,20 @@ GraphMCPService.prototype.getERC20Balances = async function (
 GraphMCPService.prototype.getNFTsOwned = async function (
   this: GraphMCPService,
   address: string,
+  chain: string = 'mainnet',
 ): Promise<AddressNftsOwnedResult> {
   const addressLower = address.toLowerCase();
+  const chainConfig = getChainConfig(chain);
   const [erc721Res, erc1155Res] = await Promise.all([
     this.runQuery(
       `SELECT contract, token_id
-       FROM \`mainnet:evm-nft-tokens@v0.6.2\`.erc721_owners
+       FROM \`${chainConfig.nftDatabase}\`.erc721_owners
        WHERE lower(owner) = '${addressLower}'
        LIMIT 1000`,
     ),
     this.runQuery(
       `SELECT contract, token_id, balance
-       FROM \`mainnet:evm-nft-tokens@v0.6.2\`.erc1155_balances
+       FROM \`${chainConfig.nftDatabase}\`.erc1155_balances
        WHERE lower(owner) = '${addressLower}' AND balance > 0
        LIMIT 1000`,
     ),
@@ -603,6 +654,7 @@ GraphMCPService.prototype.getNFTsOwned = async function (
 GraphMCPService.prototype.getUserSummary = async function (
   this: GraphMCPService,
   address: string,
+  chain: string = 'mainnet',
 ): Promise<{
   address: string;
   ethBalance?: EthBalanceResult;
@@ -610,11 +662,14 @@ GraphMCPService.prototype.getUserSummary = async function (
   nftCounts?: { erc721: number; erc1155: number };
 }> {
   const [ethBalance, erc20Balances, nftsOwned] = await Promise.all([
-    this.getEthBalance(address).catch(
+    this.getEthBalance(address, chain).catch(
       () => ({ address, balanceEth: 0 }) as EthBalanceResult,
     ),
-    this.getERC20Balances(address).catch(() => [] as Erc20BalanceRow[]),
-    this.getNFTsOwned(address).catch(() => ({ erc721: [], erc1155: [] })),
+    this.getERC20Balances(address, chain).catch(() => [] as Erc20BalanceRow[]),
+    this.getNFTsOwned(address, chain).catch(() => ({
+      erc721: [],
+      erc1155: [],
+    })),
   ]);
 
   return {

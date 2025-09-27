@@ -57,6 +57,38 @@ export class UserInfoDto {
   lastInteraction: string;
 }
 
+export class NFTInfoDto {
+  @ApiProperty({
+    description: 'NFT contract address',
+    example: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D',
+  })
+  contract: string;
+
+  @ApiProperty({
+    description: 'NFT token ID',
+    example: '1234',
+  })
+  tokenId: string;
+
+  @ApiPropertyOptional({
+    description: 'NFT name',
+    example: 'Bored Ape #1234',
+  })
+  name?: string;
+
+  @ApiPropertyOptional({
+    description: 'NFT collection name',
+    example: 'Bored Ape Yacht Club',
+  })
+  collection?: string;
+
+  @ApiPropertyOptional({
+    description: 'NFT image URL',
+    example: 'https://example.com/nft-image.png',
+  })
+  image?: string;
+}
+
 export class TalkResponseDto {
   @ApiProperty({
     description: 'Agent response message',
@@ -66,19 +98,9 @@ export class TalkResponseDto {
 
   @ApiProperty({
     description: 'NFT metadata information',
-    example: {
-      contract: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D',
-      tokenId: '1234',
-      name: 'Bored Ape #1234',
-      collection: 'Bored Ape Yacht Club',
-    },
+    type: NFTInfoDto,
   })
-  nftInfo: {
-    contract: string;
-    tokenId: string;
-    name?: string;
-    collection?: string;
-  };
+  nftInfo: NFTInfoDto;
 
   @ApiProperty({
     description: 'User information including relationship metrics',
@@ -92,5 +114,3 @@ export class TalkResponseDto {
   })
   timestamp: string;
 }
-
-// SIWE authentication deferred for MVP
