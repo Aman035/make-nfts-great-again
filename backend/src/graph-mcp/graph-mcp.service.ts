@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { spawn, ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
+import { createHash } from 'crypto';
 import { getChainConfig } from './chain-config';
 
 export interface GraphMCPDatabase {
@@ -59,7 +60,7 @@ export interface GraphMCPTokenTransfer {
 
 @Injectable()
 export class GraphMCPService extends EventEmitter implements OnModuleInit {
-  private readonly logger = new Logger(GraphMCPService.name);
+  public readonly logger = new Logger(GraphMCPService.name);
   private mcpProcess: ChildProcess | null = null;
   private isConnected = false;
   private requestId = 0;
@@ -69,12 +70,81 @@ export class GraphMCPService extends EventEmitter implements OnModuleInit {
   >();
   private responseBuffer = '';
 
+  // Cache for query results
+  private queryCache = new Map<string, { data: any; timestamp: number }>();
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  private cacheEnabled = true; // Temporary flag for debugging
+
   constructor() {
     super();
   }
 
+  // Cache helper methods
+  public getQueryHash(query: string): string {
+    return createHash('sha256').update(query.trim()).digest('hex');
+  }
+
+  public getCachedQuery(hash: string): any | null {
+    const cached = this.queryCache.get(hash);
+    if (!cached) return null;
+
+    const now = Date.now();
+    if (now - cached.timestamp > this.CACHE_TTL) {
+      this.queryCache.delete(hash);
+      return null;
+    }
+
+    return cached.data;
+  }
+
+  public setCachedQuery(hash: string, data: any): void {
+    this.queryCache.set(hash, {
+      data,
+      timestamp: Date.now(),
+    });
+  }
+
+  private cleanupExpiredCache(): void {
+    const now = Date.now();
+    for (const [key, cached] of this.queryCache.entries()) {
+      if (now - cached.timestamp > this.CACHE_TTL) {
+        this.queryCache.delete(key);
+      }
+    }
+  }
+
+  // Public method to clear cache (useful for testing or manual invalidation)
+  public clearCache(): void {
+    this.queryCache.clear();
+    this.logger.log('Query cache cleared');
+  }
+
+  // Public method to get cache stats
+  public getCacheStats(): { size: number; keys: string[] } {
+    return {
+      size: this.queryCache.size,
+      keys: Array.from(this.queryCache.keys()),
+    };
+  }
+
+  // Temporary debugging methods
+  public disableCache(): void {
+    this.cacheEnabled = false;
+    this.logger.log('Query caching disabled for debugging');
+  }
+
+  public enableCache(): void {
+    this.cacheEnabled = true;
+    this.logger.log('Query caching enabled');
+  }
+
   async onModuleInit() {
     await this.initializeMCP();
+
+    // Set up periodic cache cleanup
+    setInterval(() => {
+      this.cleanupExpiredCache();
+    }, 60000); // Clean up every minute
   }
 
   private async initializeMCP() {
@@ -306,7 +376,7 @@ export class GraphMCPService extends EventEmitter implements OnModuleInit {
   }
 
   /**
-   * Execute SQL query
+   * Execute SQL query with caching
    */
   async runQuery(query: string): Promise<any> {
     try {
@@ -314,6 +384,24 @@ export class GraphMCPService extends EventEmitter implements OnModuleInit {
         throw new Error('Graph MCP client is not ready');
       }
 
+      // Check cache first (if enabled)
+      const queryHash = this.getQueryHash(query);
+      if (this.cacheEnabled) {
+        const cached = this.getCachedQuery(queryHash);
+        if (cached) {
+          this.logger.debug(
+            `Cache hit for query hash: ${queryHash.substring(0, 8)}...`,
+          );
+          this.logger.debug(
+            `Cached result type: ${typeof cached}, keys: ${cached && typeof cached === 'object' ? Object.keys(cached) : 'N/A'}`,
+          );
+          return cached;
+        }
+      }
+
+      this.logger.debug(
+        `Cache miss for query hash: ${queryHash.substring(0, 8)}..., executing query`,
+      );
       this.logger.log(`Executing query: ${query}`);
 
       const result = await this.sendMCPRequest('tools/call', {
@@ -325,22 +413,36 @@ export class GraphMCPService extends EventEmitter implements OnModuleInit {
 
       // Normalize MCP tool response: many tools return { content: [{ type: 'text', text: '{"data":...}' }] }
       const content = (result as any)?.content;
+      let finalResult;
       if (Array.isArray(content) && content.length > 0) {
         const first = content[0];
         if (first?.type === 'text' && typeof first?.text === 'string') {
           try {
-            const parsed = JSON.parse(first.text);
-            return parsed;
+            finalResult = JSON.parse(first.text);
           } catch {
             // If not JSON, return the raw text
-            return first.text;
+            finalResult = first.text;
           }
+        } else {
+          // If content exists but not text, return content as-is
+          finalResult = content;
         }
-        // If content exists but not text, return content as-is
-        return content;
+      } else {
+        finalResult = result || null;
       }
 
-      return result || null;
+      // Cache the result (if enabled)
+      if (this.cacheEnabled) {
+        this.setCachedQuery(queryHash, finalResult);
+        this.logger.debug(
+          `Cached query result for hash: ${queryHash.substring(0, 8)}...`,
+        );
+        this.logger.debug(
+          `Fresh result type: ${typeof finalResult}, keys: ${finalResult && typeof finalResult === 'object' ? Object.keys(finalResult) : 'N/A'}`,
+        );
+      }
+
+      return finalResult;
     } catch (error) {
       this.logger.error(`Error executing query:`, error);
       throw error;

@@ -1,21 +1,46 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GraphMCPService } from '../../graph-mcp/graph-mcp.service';
+import { IPFSResolverService } from '../../ipfs/ipfs-resolver.service';
 
 @Injectable()
 export class NFTToolsService {
   private readonly logger = new Logger(NFTToolsService.name);
 
-  constructor(private readonly graphMCPService: GraphMCPService) {}
+  constructor(
+    private readonly graphMCPService: GraphMCPService,
+    private readonly ipfsResolverService: IPFSResolverService,
+  ) {}
 
   /**
-   * Get NFT details from Graph MCP
+   * Get NFT details from Graph MCP with IPFS resolution
    */
   async getNFTDetails(
     contract: string,
     tokenId: string,
     chain: string = 'mainnet',
   ) {
-    return await this.graphMCPService.getNFTDetails(contract, tokenId, chain);
+    const nftDetails = await this.graphMCPService.getNFTDetails(
+      contract,
+      tokenId,
+      chain,
+    );
+
+    // Resolve IPFS URLs in metadata
+    if (nftDetails?.metadata) {
+      try {
+        nftDetails.metadata = await this.ipfsResolverService.resolveNFTMetadata(
+          nftDetails.metadata,
+        );
+        this.logger.debug(`Resolved IPFS URLs for NFT ${contract}:${tokenId}`);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to resolve IPFS URLs for NFT ${contract}:${tokenId}:`,
+          error,
+        );
+      }
+    }
+
+    return nftDetails;
   }
 
   /**

@@ -21,7 +21,6 @@ interface Message {
 interface ChatInterfaceProps {
   nftImage: string
   nftName: string
-  nftCollection: string
   network?: string
   contract?: string
   tokenId?: string
@@ -59,7 +58,6 @@ const friendshipLevels = [
 export function ChatInterface({
   nftImage,
   nftName,
-  nftCollection,
   network = 'mainnet',
   contract,
   tokenId,
@@ -83,11 +81,9 @@ export function ChatInterface({
   const [isClient, setIsClient] = useState(false)
   const [nftInfo, setNftInfo] = useState<{
     name?: string
-    collection?: string
     image?: string
   }>({
     name: nftName,
-    collection: nftCollection,
     image: nftImage,
   })
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -177,11 +173,10 @@ export function ChatInterface({
 
       setMessages((prev) => [...prev, nftResponse])
 
-      // Update NFT info from backend response
+      // Update NFT info from backend response (only update image, keep name stable)
       if (data.nftInfo) {
         setNftInfo((prev) => ({
-          name: data.nftInfo?.name || prev.name,
-          collection: data.nftInfo?.collection || prev.collection,
+          name: prev.name, // Keep the initial name to prevent flickering
           image: data.nftInfo?.image || prev.image,
         }))
       }
@@ -259,11 +254,6 @@ export function ChatInterface({
                   {nftInfo.name ||
                     `${network}:${contract?.slice(0, 8)}...:${tokenId}`}
                 </h2>
-                {nftInfo.collection && (
-                  <p className="text-body-large text-muted-foreground mb-2">
-                    {nftInfo.collection}
-                  </p>
-                )}
                 {network && contract && tokenId && (
                   <p className="text-body-small text-muted-foreground font-mono">
                     {network}:{contract.slice(0, 8)}...:{tokenId}

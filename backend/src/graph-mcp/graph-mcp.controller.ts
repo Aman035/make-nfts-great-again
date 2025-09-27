@@ -49,6 +49,72 @@ export class GraphMCPController {
     };
   }
 
+  @Get('cache/stats')
+  @ApiOperation({
+    summary: 'Get cache statistics',
+    description: 'Get current query cache statistics',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cache statistics',
+    schema: {
+      type: 'object',
+      properties: {
+        size: { type: 'number', description: 'Number of cached items' },
+        keys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Cache keys',
+        },
+      },
+    },
+  })
+  getCacheStats() {
+    return this.graphMCPService.getCacheStats();
+  }
+
+  @Post('cache/clear')
+  @ApiOperation({
+    summary: 'Clear cache',
+    description: 'Clear all cached query data',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cache cleared successfully',
+  })
+  clearCache() {
+    this.graphMCPService.clearCache();
+    return { message: 'Cache cleared successfully' };
+  }
+
+  @Post('cache/disable')
+  @ApiOperation({
+    summary: 'Disable cache',
+    description: 'Temporarily disable query caching for debugging',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cache disabled successfully',
+  })
+  disableCache() {
+    this.graphMCPService.disableCache();
+    return { message: 'Cache disabled successfully' };
+  }
+
+  @Post('cache/enable')
+  @ApiOperation({
+    summary: 'Enable cache',
+    description: 'Re-enable query caching',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cache enabled successfully',
+  })
+  enableCache() {
+    this.graphMCPService.enableCache();
+    return { message: 'Cache enabled successfully' };
+  }
+
   @Get('status')
   @ApiOperation({
     summary: 'Get Graph MCP connection status',

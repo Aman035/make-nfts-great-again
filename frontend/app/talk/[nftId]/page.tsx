@@ -258,7 +258,6 @@ function TalkPageContent({ params }: TalkPageProps) {
         <ChatInterface
           nftImage={nftData.image || '/companion.png'}
           nftName={nftData.name || `NFT #${nftData.tokenId}`}
-          nftCollection={nftData.collection || 'Unknown Collection'}
           network={nftData.network}
           contract={nftData.contract}
           tokenId={nftData.tokenId}
