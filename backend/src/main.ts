@@ -19,7 +19,7 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('Project X API')
+    .setTitle('Make NFTs Great Again API')
     .setDescription('API for blockchain data analysis and NFT companion agent')
     .setVersion('1.0')
     .addTag('agent', 'AI agent for blockchain data analysis')
