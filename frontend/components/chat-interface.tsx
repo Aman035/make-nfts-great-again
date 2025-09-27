@@ -130,7 +130,7 @@ export function ChatInterface({
     setIsTyping(true)
     setError(null)
 
-    const apiUrl = `http://localhost:3001/api/nft-agent/${network}/${contract}/${tokenId}/${address}/talk`
+    const apiUrl = `https://backend.make-nfts-great-again.xyz/api/nft-agent/${network}/${contract}/${tokenId}/${address}/talk`
     console.log('Making API call to:', apiUrl)
     console.log('Request body:', {
       message: inputValue,
@@ -138,7 +138,7 @@ export function ChatInterface({
 
     try {
       const response = await fetch(
-        `http://localhost:3001/api/nft-agent/${network}/${contract}/${tokenId}/${address}/talk`,
+        `https://backend.make-nfts-great-again.xyz/api/nft-agent/${network}/${contract}/${tokenId}/${address}/talk`,
         {
           method: 'POST',
           headers: {
