@@ -44,7 +44,7 @@ export default function HowItWorksPage() {
               icon: <Heart className="h-8 w-8" />,
               title: 'Growing Relationships',
               description:
-                'The more onchain history you have and the more you talk to NFTs, the deeper your relationship grows. Build lasting bonds through meaningful interactions.',
+                "Friendship grows through conversations and ownership status. Happiness increases with your onchain activity - ETH holdings, NFT collections, and ERC20 tokens. Your digital wealth directly impacts your NFT companion's mood!",
               color: 'from-red-500 to-pink-500',
             },
             {
